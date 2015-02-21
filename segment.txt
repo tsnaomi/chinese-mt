@@ -1,4 +1,2 @@
-stanford-segmenter-2015-01-30/segment.sh ctb corpus/dev.txt UTF-8 0 > segmented-ctb.txt
-stanford-segmenter-2015-01-30/segment.sh pku corpus/dev.txt UTF-8 0 > segmented-pku.txt
-
-# stanford-segmenter-2015-01-30/segment.sh pku corpus/corpus.txt UTF-8 0 > vocab.txt
+stanford-segmenter-2015-01-30/segment.sh ctb corpus/corpus.txt UTF-8 0 > segmented-ctb.txt
+stanford-segmenter-2015-01-30/segment.sh pku corpus/corpus.txt UTF-8 0 > segmented-pku.txt
