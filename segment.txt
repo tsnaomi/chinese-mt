@@ -1,0 +1,1 @@
+stanford-segmenter-2015-01-30/segment.sh ctb corpus/corpus.txt UTF-8 0 > segmented.txt
