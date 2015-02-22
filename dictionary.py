@@ -1,3 +1,5 @@
+# coding=utf-8
+
 dictionary = {
     '说到': [],
     '筷子': [],
