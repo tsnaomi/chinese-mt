@@ -1,158 +1,639 @@
 # coding=utf-8
 
 dictionary = {
-    '说到': [],
-    '筷子': [],
-    '的': [],
-    '起源': [],
-    '中国': [],
-    '是': [],
-    '世界上': [],
-    '第一': [],
-    '个': [],
-    '使用': [],
-    '国家': [],
-    '用': [],
-    '吃饭': [],
-    '已经': [],
-    '有': [],
-    '至少': [],
-    '3000': [],
-    '年': [],
-    '历史': [],
-    '了': [],
-    '看起来': [],
-    '很': [],
-    '简单': [],
-    '只有': [],
-    '两': [],
-    '根': [],
-    '小': [],
-    '细棒': [],
-    '但': [],
-    '它': [],
-    '很多': [],
-    '功能': [],
-    '比如': [],
-    '挑选': [],
-    '移动': [],
-    '夹': [],
-    '搅拌': [],
-    '或者挖': [],
-    '此外': [],
-    '便于': [],
-    '价格': [],
-    '便宜': [],
-    '而且': [],
-    '也': [],
-    '独有': [],
-    '餐具': [],
-    '人': [],
-    '无论是': [],
-    '中国人': [],
-    '还是': [],
-    '外国人': [],
-    '都': [],
-    '无': [],
-    '不': [],
-    '钦佩': [],
-    '发明者': [],
-    '对于': [],
-    '来说': [],
-    '正': [],
-    '迅速': [],
-    '成为': [],
-    '他们': [],
-    '最': [],
-    '重要': [],
-    '双边': [],
-    '贸易': [],
-    '伙伴': [],
-    '然而': [],
-    '和': [],
-    '世界': [],
-    '其他': [],
-    '之间': [],
-    '平衡': [],
-    '问题': [],
-    '引发': [],
-    '关注': [],
-    '尤其是': [],
-    '美国': [],
-    '对': [],
-    '赤字': [],
-    '大': [],
-    '达到': [],
-    '3150亿': [],
-    '美元': [],
-    '这个': [],
-    '数字': [],
-    '十': [],
-    '前': [],
-    '三': [],
-    '倍': [],
-    '还': [],
-    '多': [],
-    '纠纷': [],
-    '越来越': [],
-    '主要': [],
-    '关于': [],
-    '倾销': [],
-    '知识': [],
-    '产权': [],
-    '人民币': [],
-    '估价': [],
-    '2008': [],
-    '全球': [],
-    '经济': [],
-    '衰退': [],
-    '导致': [],
-    '新': [],
-    '毕业生': [],
-    '就业': [],
-    '市场': [],
-    '显著': [],
-    '下降': [],
-    '2009年': [],
-    '毕业': [],
-    '学生': [],
-    '将': [],
-    '加入': [],
-    '到': [],
-    '2008年': [],
-    '仍': [],
-    '在': [],
-    '找': [],
-    '工作': [],
-    '300万': [],
-    '之中': [],
-    '过剩': [],
-    '可以': [],
-    '归因于': [],
-    '大学': [],
-    '入学率': [],
-    '提高': [],
-    '教育': [],
-    '机构': [],
-    '增加': [],
-    '虽然': [],
-    '人数': [],
-    '但是': [],
-    '质量': [],
-    '并': [],
-    '没有': [],
-    '明显': [],
-    '地': [],
-    '大多数': [],
-    '情况': [],
-    '下': [],
-    '无法': [],
-    '找到': [],
-    '合适': [],
-    '机会': [],
-    '因为': [],
-    '行业': [],
-    '所': [],
-    '需': [],
-    '技能': [],
+    '说到': [
+        ('refer', 'vi'),
+        ('speak about', 'vtr'),
+        ('speaking of', 'prep'),
+        ('when it comes to', 'prep'),
+        ],
+    '筷子': [
+        ('chopsticks', 'npl'),
+        ],
+    '的': [
+        ('of', 'prep'),
+        ('', 'aux', 'de'),
+        ],
+    '起源': [
+        ('genesis', 'n'),
+        ('beginning', 'n'),
+        ('birth', 'n'),
+        ('origin', 'n'),
+        ('originate', 'vi'),
+        ('germ', 'n'),
+        ('deviation', 'n'),
+        ('provenance', 'n'),
+        ('nascence', 'n'),
+        ('derive from', 'vtr'),
+        ],
+    '中国': [
+        ('China', 'n'),
+        ],
+    '是': [
+        ('be', 'vi'),
+        ('yes', 'adv'),
+        ('right', 'n'),
+        ],
+    '世界上': [
+        ('under the sun', 'adv'),
+        ],
+    '第一': [
+        ('first', 'adv'),
+        ('top', 'adv'),
+        ],
+    '个': [
+        ('', 'measure word', 'ge'),
+        ],
+    '使用': [
+        ('use', 'v'),
+        ],
+    '国家': [
+        ('state', 'n'),
+        ],
+    '用': [
+        ('use', 'v'),
+        ('need', 'v'),
+        ('consume', 'v'),
+        ('expense', 'n'),
+        ('use', 'n'),
+        ],
+    '吃饭': [
+        ('have a meal', 'v'),
+        ],
+    '已经': [
+        ('already', 'adv'),
+        ],
+    '有': [
+        ('have', 'v'),
+        ('occur', 'v'),
+        ],
+    '至少': [
+        ('at least', 'adv'),
+        ],
+    '年': [
+        ('year', 'n'), ],
+    '历史': [
+        ('history', 'n'), ],
+    '了': [
+        ('finish', 'v'),
+        ('understand', 'v'),
+        ('', 'perfective', 'PFV'),
+        ],
+    '看起来': [
+        ('it seems', 'v')
+        ],
+    '很': [
+        ('very', 'adv')
+        ],
+    '简单': [
+        ('simple', 'adj'),
+        ('causal', 'adj')
+        ],
+    '只有': [
+        ('only', 'adv')
+        ],
+    '两': [
+        ('two', 'number'),
+        ('a few', 'num'),
+        ('both', 'n')
+        ],
+    '根': [
+        ('root', 'n'),
+        ('offspring', 'n'),
+        ('base', 'n'),
+        ('origin', 'n'),
+        ('grounds', 'n'),
+        ('thoroughly', 'adv'),
+        ],
+    '小': [
+        ('small', 'adj'),
+        ('youngest', 'adj'),
+        ('a bit', 'adv'),
+        ('young children', 'n'),
+        ],
+    '细棒': [
+        ('thin stick', 'n'),
+        ],
+    '但': [
+        ('but', 'conj'),
+        ('only', 'adv'),
+        ],
+    '它': [
+        ('it', 'pronoun'),
+        ],
+    '很多': [
+        ('much', 'adj'),
+        ('much', 'adv'),
+        ],
+    '功能': [
+        ('function', 'n'),
+        ],
+    '比如': [
+        ('for instance', 'conj'),
+        ],
+    '挑选': [
+        ('select', 'v'),
+        ],
+    '移动': [
+        ('move', 'v'),
+        ],
+    '夹': [
+        ('clip', 'v'),
+        ('clamp', 'v'),
+        ('clip', 'n'),
+        ('clamp', 'n'),
+        ],
+    '搅拌': [
+        ('stir', 'v'),
+        ],
+    '或者挖': [
+        ('or dig', 'v'),
+        ('or pick', 'v'),
+        ],
+    '此外': [
+        ('apart from this', 'conj'),
+        ],
+    '便于': [
+        ('be easy to', 'v'),
+        ],
+    '价格': [
+        ('price', 'n'),
+        ],
+    '便宜': [
+        ('cheap', 'adj'),
+        ('small gains', 'n'),
+        ('let off lightly', 'v'),
+        ],
+    '而且': [
+        ('and what\'s more', 'conj'),
+        ],
+    '也': [
+        ('also', 'adv'),
+        ],
+    '独有': [
+        ('to personally own', 'v'),
+        ('to possess solely', 'v'),
+        ('monopoly', 'n'),
+        ],
+    '餐具': [
+        ('eating utensils', 'n'),
+        ],
+    '人': [
+        ('person', 'n'),
+        ('human being', 'n'),
+        ],
+    '无论是': [
+        ('no matter', 'prep'),
+        ('regardless', 'adv'),
+        ('no matter', 'prep'),
+        ('no matter how', 'adv'),
+        ],
+    '中国人': [
+        ('Chinese people', 'n'),
+        ('Chinese', 'n'),
+        ],
+    '还是': [
+        ('still', 'adv'),
+        ('had better', 'adv'),
+        ('or', 'conj'),
+        ],
+    '外国人': [
+        ('foreigner', 'n'),
+        ],
+    '都': [
+        ('all', 'adv'),
+        ('even', 'adv'),
+        ('already', 'adv'),
+        ],
+    '无': [
+        ('not have', 'v'),
+        ('never mind', 'v'),
+        ('not', 'adv'),
+        ],
+    '不': [
+        ('no', 'adv'),
+        ('not', 'adv'),
+        ],
+    '钦佩': [
+        ('admire', 'v'),
+        ],
+    '发明者': [
+        ('inventor', 'n'),
+        ],
+    '对于': [
+        ('for', 'prep'),
+        ('to', 'prep'),
+        ('about', 'prep'),
+        ('with', 'prep'),
+        ('towards', 'prep'),
+        ('toward', 'prep'),
+        ],
+    '来说': [
+        ('against', 'prep'),
+        ('on the part of', ''),
+        ('with regard to', 'prep'),
+        ],
+    '正': [
+        ('straight', 'adj'),
+        ('main', 'adj'),
+        ('right', 'adj'),
+        ('upright', 'adj'),
+        ('pure', 'adj'),
+        ('regular', 'adj'),
+        ('principal', 'adj'),
+        ('positive', 'adj'),
+        ('straighten', 'v'),
+        ('just', 'adv'),
+        ('right now', 'adv'),
+        ],
+    '迅速': [
+        ('swift', 'adj'),
+        ],
+    '成为': [
+        ('become', 'v'),
+        ],
+    '他们': [
+        ('they', 'pron'),
+        ],
+    '最': [
+        ('most', 'adv'),
+        ],
+    '重要': [
+        ('important', 'adj'),
+        ],
+    '双边': [
+        ('bilateral', 'adj'),
+        ],
+    '贸易': [
+        ('trade', 'n'),
+        ],
+    '伙伴': [
+        ('companion', 'n'),
+        ],
+    '然而': [
+        ('however', 'conj'),
+        ],
+    '和': [
+        ('and', 'conj'),
+        ('with', 'prep'),
+        ('mild', 'adj'),
+        ('warm', 'adj'),
+        ('on good terms', 'adj'),
+        ('reconciliation', 'n'),
+        ('peace', 'n'),
+        ('total', 'n'),
+        ('draw', 'n'),
+        ],
+    '世界': [
+        ('world', 'n'),
+        ],
+    '其他': [
+        ('other', 'pron'),
+        ],
+    '之间': [
+        ('between', 'prep'),
+        ('among', 'prep'),
+        ],
+    '平衡': [
+        ('balance', 'n'),
+        ('balance', 'vtr'),
+        ('tradeoff', 'n'),
+        ],
+    '问题': [
+        ('question', 'n'),
+        ('problem', 'n'),
+        ('fault', 'n'),
+        ('point', 'n'),
+        ('issue', 'n'),
+        ],
+    '引发': [
+        ('initiate', 'v'),
+        ],
+    '关注': [
+        ('pay close attention to', 'v'),
+        ('pay attention to', 'v'),
+        ],
+    '尤其是': [
+        ('not least', 'adv'),
+        ('notably', 'adv'),
+        ],
+    '美国': [
+        ('America', 'n'),
+        ],
+    '对': [
+        ('for', 'prep'),
+        ('to', 'prep'),
+        ('yes', 'adv'),
+        ('versus', 'prep'),
+        ('correct', 'adj'),
+        ('right', 'adj')
+        ],
+    '赤字': [
+        ('deficit', 'n'),
+        ],
+    '大': [
+        ('big', 'adj'),
+        ('great', 'adj'),
+        ],
+    '达到': [
+        ('reach', 'v'),
+        ('achieve', 'v'),
+        ],
+    '3150亿': [
+        ('315 billion', 'number'),
+        ],
+    '美元': [
+        ('USD', 'n'),
+        ],
+    '这个': [
+        ('this', 'pron'),
+        ],
+    '数字': [
+        ('number', 'n'),
+        ('figure', 'adj'),
+        ],
+    '十': [
+        ('10', 'number'),
+        ],
+    '前': [
+        ('front', 'adj'),
+        ('first', 'adj'),
+        ('former', 'adj'),
+        ('future', 'adj'),
+        ('advance', 'v'),
+        ],
+    '三': [
+        ('3', 'number'),
+        ],
+    '倍': [
+        ('times', 'n'),
+        ('double', 'adj'),
+        ],
+    '还': [
+        ('still', 'adv'),
+        ('yet', 'adv'),
+        ('even more', 'adv'),
+        ('even', 'adv'),
+        ('really', 'adv'),
+        ('as early as', 'adv'),
+        ],
+    '多': [
+        ('a lot of', 'adj'),
+        ('many', 'adj'),
+        ('much', 'adj'),
+        ],
+    '纠纷': [
+        ('dispute', 'n'),
+        ],
+    '越来越': [
+        ('more and more', 'adv'),
+        ],
+    '主要': [
+        ('major', 'adj'),
+        ],
+    '关于': [
+        ('with reference to', 'prep'),
+        ('regarding', 'prep'),
+        ],
+    '倾销': [
+        ('dump', 'v'),
+        ],
+    '知识': [
+        ('knowledge', 'n'),
+        ],
+    '产权': [
+        ('property rights', 'n'),
+        ],
+    '人民币': [
+        ('RMB', 'n'),
+        ],
+    '估价': [
+        ('estimate', 'v'),
+        ('evaluate', 'v'),
+        ],
+    '全球': [
+        ('the whole world', 'n'),
+        ],
+    '经济': [
+        ('economy', 'n'),
+        ('economic', 'adj'),
+        ('economical', 'adj'),
+        ],
+    '衰退': [
+        ('decline', 'v'),
+        ('fail', 'v'),
+        ],
+    '导致': [
+        ('lead to', 'v'),
+        ],
+    '新': [
+        ('new', 'adj'),
+        ('newly', 'adv'),
+        ],
+    '毕业生': [
+        ('graduate', 'n'),
+        ],
+    '就业': [
+        ('get a job', 'v'),
+        ('employment', 'n'),
+        ],
+    '市场': [
+        ('market', 'n'),
+        ],
+    '显著': [
+        ('striking', 'adj'),
+        ],
+    '下降': [
+        ('descend', 'v'),
+        ('descent', 'n'),
+        ],
+    '2009年': [
+        ('2009', 'n'),
+        ],
+    '毕业': [
+        ('graduate', 'v'),
+        ],
+    '学生': [
+        ('student', 'n'),
+        ],
+    '将': [
+        ('will', 'v'),
+        ('would', 'v'),
+        ('shall', 'v'),
+        ('commander in chief', 'n'),
+        ('general', 'n'),
+        ],
+    '加入': [
+        ('join', 'v'),
+        ('add ', 'v'),
+        ],
+    '到': [
+        ('arrive', 'v'),
+        ('until', 'conj'),
+        ('until', 'prep'),
+        ('to', 'prep'),
+        ('up to', 'prep'),
+        ('up', 'adv'),
+        ],
+    '2008年': [
+        ('2008', 'n'),
+        ],
+    '仍': [
+        ('still', 'adv'),
+        ('remain', 'v'),
+        ],
+    '在': [
+        ('be', 'vi'),
+        ('at', 'prep'),
+        ('in', 'prep'),
+        ('on', 'prep'),
+        ],
+    '找': [
+        ('look for', 'v'),
+        ('find', 'v'),
+        ],
+    '工作': [
+        ('work', 'n'),
+        ('job', 'n'),
+        ],
+    '300万': [
+        ('3 million', 'n'),
+        ],
+    '之中': [
+        ('from', 'prep'),
+        ('between', 'prep'),
+        ('among', 'prep'),
+        ('amongst', 'prep')],
+    '过剩': [
+        ('excessive', 'adj'),
+        ],
+    '可以': [
+        ('can', 'aux'),
+        ('might', 'aux'),
+        ('could', 'aux'),
+        ('may', 'aux'),
+        ('will', 'aux'),
+        ('could', 'aux'),
+        ('sure', 'interj'),
+        ('fine', 'adj'),
+        ('ok', 'interj'),
+        ('righto', 'interj'),
+        ('be able', 'vi'),
+        ('be allowed to', 'vtr'),
+        ],
+    '归因于': [
+        ('put down to', 'vtr'),
+        ('attribute', 'vtr'),
+        ('ascribe', 'vtr'),
+        ('attributable to', 'adj'),
+        ('put attribute to', 'vtr'),
+        ('attributed to', 'adj'),
+        ],
+    '大学': [
+        ('university', 'n'),
+        ],
+    '入学率': [
+        ('enrollment rate', 'n'),
+        ],
+    '提高': [
+        ('raise', 'v'),
+        ],
+    '教育': [
+        ('education', 'n'),
+        ('educate', 'v'),
+        ],
+    '机构': [
+        ('mechanism', 'n'),
+        ('body', 'n'),
+        ('internal structure', 'n'),
+        ],
+    '增加': [
+        ('increase', 'v'),
+        ],
+    '虽然': [
+        ('although', 'conj'),
+        ],
+    '人数': [
+        ('number of people', 'n'),
+        ],
+    '但是': [
+        ('but', 'conj'),
+        ],
+    '质量': [
+        ('quality', 'n'),
+        ('mass', 'n'),
+        ],
+    '并': [
+        ('merge', 'v'),
+        ('bring together', 'v'),
+        ('side by side', 'adv'),
+        ('really', 'adv'),
+        ('and', 'conj'),
+        ],
+    '没有': [
+        ('not have', 'v'),
+        ],
+    '明显': [
+        ('obvious', 'adj'),
+        ],
+    '地': [
+        ('land', 'n'),
+        ('location', 'n'),
+        ('', 'aux', 'di'),
+        ('background', 'n'),
+        ],
+    '大多数': [
+        ('most', 'adj'),
+        ('vast majority of', 'adj'),
+        ('bulk of', 'adj'),
+        ],
+    '情况': [
+        ('circumstances', 'n'),
+        ],
+    '下': [
+        ('below', 'prep'),
+        ('beneath', 'prep'),
+        ('under', 'prep'),
+        ('beneath', 'prep'),
+        ('beneath', 'adv'),
+        ],
+    '无法': [
+        ('cannot', 'v'),
+        ('incapable', 'v'),
+        ('unable', 'n'),
+        ],
+    '找到': [
+        ('find', 'v'),
+        ],
+    '合适': [
+        ('appropriate', 'adj'),
+        ],
+    '机会': [
+        ('opportunity', 'n'),
+        ],
+    '因为': [
+        ('because', 'conj'),
+        ],
+    '行业': [
+        ('profession', 'n'),
+        ('trade', 'n'),
+        ('skill', 'n'),
+        ],
+    '所': [
+        ('what', 'pron'),
+        ('department', 'n'),
+        ],
+    '需': [
+        ('need', 'v'),
+        ('require', 'v'),
+        ('want', 'n'),
+        ],
+    '技能': [
+        ('skill', 'n'),
+        ('hand', 'n'),
+        ('craft', 'n'),
+        ('knack', 'n'),
+        ('technique', 'n'),
+        ('know-how', 'n'),
+        ],
 }
