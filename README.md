@@ -11,5 +11,5 @@ from baseline import baseline_translate
 bt = baseline_translate('segmented-ctb-dev.txt')
 
 # get a string representation of the baseline translation of the dev set
-Returns a list: `baseline_translate('segmented-ctb-dev.txt')`
+bt = baseline_translate('segmented-ctb-dev.txt', as_string=True)
 ```
