@@ -21,6 +21,7 @@ def baseline_translate(filename, as_string=False, segment=False):
     translation = []
 
     if segment:
+        # segment the file to be translated
         segmented = _segment(filename)
         text = segmented.split()
 
