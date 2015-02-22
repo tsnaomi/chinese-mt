@@ -71,7 +71,7 @@ def _prettify(text):
     text = text.replace(' ,', ',').replace(' .', '.').replace('\n ', '\n')
 
     # capitalize the first letter of each sentence
-    lowercase = [m.end(0) for m in re.finditer(r'^|(\n)', text)][:-1]
+    lowercase = [m.end(0) for m in re.finditer(r'^|\n', text)][:-1]
     for i in lowercase:
         text = text[:i] + text[i].upper() + text[i+1:]
 
