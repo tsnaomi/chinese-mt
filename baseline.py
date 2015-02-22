@@ -36,24 +36,24 @@ def baseline_translate(filename, as_string=False, segment=False):
     for t in text:
 
         if t in punctuation:
-            # keep punctuation in translation
-            translation.append(punct_dict[t])
+            # preserve punctuation in translation
+            token = punct_dict[t]
 
         else:
 
             try:
-                # grab first English translation of word
-                word = dictionary[t][0][0]
-                translation.append(word)
+                # grab the first English translation of the word
+                token = dictionary[t][0][0]
 
             except (KeyError, IndexError):
                 # append the token itself
-                translation.append(t)
+                token = t
+
+        translation.append([t, token])
 
     # if as_string is True, convert translation into a string
     if as_string:
-        translation = ' '.join(translation)
-        translation = _prettify(translation)
+        translation = _translate_as_string(translation)
 
     return translation
 
@@ -78,5 +78,17 @@ def _prettify(text):
     return text
 
 
+def _translate_as_string(list_translation):
+    # convert a list translation into a string translation
+    string_translation = [t[1] for t in list_translation]
+    string_translation = ' '.join(string_translation)
+    string_translation = _prettify(string_translation)
+
+    return string_translation
+
+
 if __name__ == '__main__':
+    print '\n\033[4mList translation\033[0m:\n'
+    print baseline_translate('segmented-ctb-dev.txt')
+    print '\n\033[4mString translation\033[0m:\n'
     print baseline_translate('segmented-ctb-dev.txt', as_string=True)
