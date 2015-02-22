@@ -1,5 +1,6 @@
 # coding=utf-8
 
+import re
 import subprocess
 
 from dictionary import dictionary
@@ -23,15 +24,14 @@ def baseline_translate(filename, as_string=False, segment=False):
     if segment:
         # segment the file to be translated
         segmented = _segment(filename)
-        text = segmented.split()
+        text = segmented.replace('\n', ' \n ').strip(' ').split(' ')
 
     else:
 
         # open the file to be translated
         with open(filename, 'r') as f:
             lines = f.readlines()
-            text = ' '.join(lines)
-            text = text.split()
+            text = ' '.join(lines).replace('\n', ' \n').strip(' ').split(' ')
 
     for t in text:
 
@@ -46,14 +46,14 @@ def baseline_translate(filename, as_string=False, segment=False):
                 word = dictionary[t][0][0]
                 translation.append(word)
 
-            except IndexError:
-                # append the Chinese token itself
+            except (KeyError, IndexError):
+                # append the token itself
                 translation.append(t)
 
     # if as_string is True, convert translation into a string
     if as_string:
         translation = ' '.join(translation)
-        translation = translation.replace(' ,', ',').replace(' .', '.')
+        translation = _prettify(translation)
 
     return translation
 
@@ -64,6 +64,18 @@ def _segment(filename):
     segmented = subprocess.check_output(cmd, shell=True)
 
     return segmented
+
+
+def _prettify(text):
+    # remove improper whitespacing around punctuation
+    text = text.replace(' ,', ',').replace(' .', '.').replace('\n ', '\n')
+
+    # capitalize the first letter of each sentence
+    lowercase = [m.end(0) for m in re.finditer(r'^|(\n)', text)][:-1]
+    for i in lowercase:
+        text = text[:i] + text[i].upper() + text[i+1:]
+
+    return text
 
 
 if __name__ == '__main__':
