@@ -635,5 +635,9 @@ dictionary = {
         ('knack', 'n'),
         ('technique', 'n'),
         ('know-how', 'n'),
-        ],
+        ]
 }
+
+# TAGS TO REPLACE:
+# adv, npl, num, pronoun, vi, number, n, pron, perfective, vtr, interj, v, aux,
+# conj, measure word, adj, prep, ''
