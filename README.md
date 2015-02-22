@@ -15,4 +15,5 @@ bt = baseline_translate('segmented-ctb-dev.txt', as_string=True)
 ```
 
 To demo how baseline.py handles the dev set, call this in your command line:
+
 `python baseline.py`
