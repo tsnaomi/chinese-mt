@@ -1,0 +1,40 @@
+(potential strategies in the parentheses)
+
+1. Verb: VA, VC, VE, VV 
+  * Predicative adjective: VA  (insert copula)
+  * Copula: VC  (translated as "be" in the main clause, how about embedded clauses?)
+  * you3 as the main verb: VE  (=> most of the time, "have"; potentially expletive "there be") 
+  * Other verb: VV  (postprocessing: tense & agreement)
+
+2. Noun: NR, NT, NN 
+  * Proper Noun: NR (direct translation; may need to check case or be turned to an adjective)  
+  * Temporal Noun: NT (similar to localizer, move to either the beginning or the end, post-check preposition)
+  * Other Noun: NN (post-check determiner, number, etc) 
+
+3. Localizer: LC (move to either the beginning or the end of the sentence, post-check preposition)
+
+4. Pronoun: PN (post-check case)
+
+5 Determiners and numbers: DT, CD, OD 
+  * Determiner: DT (just make sure no incompatible determiners in English in the end)
+  * Cardinal Number: CD 
+  * Ordinal Number: OD 
+6 Measure word: M (when to delete them?) 
+
+7 Adverb: AD (confusion with adjectives, reorder if necessary)
+
+8 Preposition: P (might be better to check later)
+
+9 Conjunctions: CC, CS 
+  * Coordinating conjunction: CC 
+  * Subordinating conjunction: CS  (move to the beginning of the clause if necessary?) 
+
+10 Particle: DEC, DEG, DER, DEV, AS, SP, ETC, MSP . . . . . . 
+  * de5 as a complementizer or a nominalizer: DEC (!to relative clause)
+  * de5 as a genitive marker and an associative marker: DEG (to possessive; check case, genitive alternation) 
+  * Resultative de5: DER 
+  * Manner de5: DEV  (adverbial)
+  * Aspect Particle: AS (-ing, PFV)
+  * Sentence- nal particle: SP  (PFV, Question)
+  * ETC . . . . . . . . . . . . . . . . . . . . . . . .  
+
