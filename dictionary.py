@@ -75,12 +75,12 @@ dictionary = {
     '历史': [
         ('history', 'n'), ],
     '了': [
-        ('finish', 'v'),
-        ('understand', 'v'),
         ('', 'perfective', 'PFV'),
+        ('finish', 'v'),
         ],
     '看起来': [
-        ('it seems', 'v')
+        ('look', 'v'),
+        ('seem', 'v'),
         ],
     '很': [
         ('very', 'adv')
@@ -99,6 +99,7 @@ dictionary = {
         ],
     '根': [
         ('root', 'n'),
+        ('', 'measure word', 'gen'),
         ('offspring', 'n'),
         ('base', 'n'),
         ('origin', 'n'),
@@ -122,8 +123,8 @@ dictionary = {
         ('it', 'pronoun'),
         ],
     '很多': [
-        ('much', 'adj'),
-        ('much', 'adv'),
+        ('a great many', 'adj'),
+        ('a large number of', 'adj'),
         ],
     '功能': [
         ('function', 'n'),
@@ -171,8 +172,8 @@ dictionary = {
         ('also', 'adv'),
         ],
     '独有': [
-        ('to personally own', 'v'),
-        ('to possess solely', 'v'),
+        ('personally own', 'v'),
+        ('possess solely', 'v'),
         ('monopoly', 'n'),
         ],
     '餐具': [
@@ -206,6 +207,7 @@ dictionary = {
         ('already', 'adv'),
         ],
     '无': [
+        ('nothing', 'n'),
         ('not have', 'v'),
         ('never mind', 'v'),
         ('not', 'adv'),
@@ -230,7 +232,7 @@ dictionary = {
         ],
     '来说': [
         ('against', 'prep'),
-        ('on the part of', ''),
+        ('on the part of', 'prep'),
         ('with regard to', 'prep'),
         ],
     '正': [
@@ -312,6 +314,7 @@ dictionary = {
     '关注': [
         ('pay close attention to', 'v'),
         ('pay attention to', 'v'),
+        ('attention', 'n')
         ],
     '尤其是': [
         ('not least', 'adv'),
@@ -379,6 +382,7 @@ dictionary = {
         ],
     '多': [
         ('a lot of', 'adj'),
+        ('more', 'adj'),
         ('many', 'adj'),
         ('much', 'adj'),
         ],
@@ -580,7 +584,6 @@ dictionary = {
         ('land', 'n'),
         ('location', 'n'),
         ('', 'aux', 'di'),
-        ('background', 'n'),
         ],
     '大多数': [
         ('most', 'adj'),
