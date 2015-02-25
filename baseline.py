@@ -4,6 +4,8 @@ import re
 import subprocess
 
 from dictionary import dictionary
+from defSelector import defSelector, getTag, getWord
+from sentenceArranger import sentenceArranger
 
 
 def baseline_translate(filename, as_string=False, segment=False):
@@ -21,35 +23,49 @@ def baseline_translate(filename, as_string=False, segment=False):
     punct_dict = {'，': ',', '、': ',', '。': '.'}
     translation = []
 
-    if segment:
-        # segment the file to be translated
-        segmented = _segment(filename)
-        text = segmented.replace('\n', ' \n ').strip(' ').split(' ')
+    ## Assume we will not use the segmenter so this is commented out. If use will have to update
+    # if segment:
+    #     # segment the file to be translated
+    #     segmented = _segment(filename)
+    #     text = segmented.replace('\n', ' \n ').strip(' ').split(' ')
+    # else:
 
-    else:
+    # open the file to be translated
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+    
+    text = []
+    for line in lines:
+        line = line.replace('\n', ' \n').strip(' ').split(' ')
+        text.append(line)
 
-        # open the file to be translated
-        with open(filename, 'r') as f:
-            lines = f.readlines()
-            text = ' '.join(lines).replace('\n', ' \n').strip(' ').split(' ')
+    for line in text:
 
-    for t in text:
+        # rearrange sentence to make it english-comprehensible
+        # change command to "baseline" if want to compare with original
+        line = sentenceArranger(line, "optimized")
+        
+        for i in xrange(len(line)):
 
-        if t in punctuation:
-            # preserve punctuation in translation
-            token = punct_dict[t]
+            word = getWord(line[i])
+            POStoken = getTag(line[i])
 
-        else:
+            if word in punctuation:
+                # preserve punctuation in translation
+                token = punct_dict[word]
 
-            try:
-                # grab the first English translation of the word
-                token = dictionary[t][0][0]
+            else:
 
-            except (KeyError, IndexError):
-                # append the token itself
-                token = t
+                try:
+                    # grab the first English translation of the word
+                    # change command to "baseline" if want to compare with original
+                    token = defSelector(i, line, "optimized")
 
-        translation.append([t, token])
+                except (KeyError, IndexError):
+                    # append the token itself
+                    token = word
+
+            translation.append([word, token])
 
     # if as_string is True, convert translation into a string
     if as_string:
@@ -89,6 +105,6 @@ def _prettify(text):
 
 if __name__ == '__main__':
     print '\n\033[4mList translation\033[0m:\n'
-    print baseline_translate('segmented-ctb-dev.txt')
+    print baseline_translate('tagger/tagged_dev.txt')
     print '\n\033[4mString translation\033[0m:\n'
-    print baseline_translate('segmented-ctb-dev.txt', as_string=True)
+    print baseline_translate('tagger/tagged_dev.txt', as_string=True)
