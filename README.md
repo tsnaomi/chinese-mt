@@ -9,10 +9,10 @@ from baseline import translate
 
 # get a list representation of the translation of the dev set
 # here, bt is a list of lists, with the latter of the form ['说到', 'refer']
-bt = baseline_translate('segmented-ctb-dev.txt')
+bt = translate('segmented-ctb-dev.txt')
 
 # get a string representation of the translation of the dev set
-bt = baseline_translate('segmented-ctb-dev.txt', as_string=True)
+bt = translate('segmented-ctb-dev.txt', as_string=True)
 ```
 
 If you keep the translation as a list of lists, you can later call _translate_as_string() to get a string representation:

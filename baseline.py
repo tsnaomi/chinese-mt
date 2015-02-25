@@ -7,7 +7,9 @@ from defSelector import defSelector, getWord
 from sentenceArranger import sentenceArranger
 
 
-def translate(filename, as_string=False, segment=False):
+# To get a baseline translation, pass kw='baseline' to translate().
+
+def translate(filename, as_string=False, segment=False, kw='optimized'):
     '''Return a primitive translation of a file from Chinese into English.
 
     If 'as_string' is True, the translation is returned as a string. Otherwise,
@@ -37,8 +39,8 @@ def translate(filename, as_string=False, segment=False):
         line = line.strip(' ').replace('\n', ' \n').split(' ')
 
         # rearrange sentence to make it English-comprehensible
-        # change 'optimized' to 'baseline' to get a baseline translation
-        line = sentenceArranger(line, 'baseline')
+        # change kw to 'baseline' to get a baseline translation
+        line = sentenceArranger(line, kw)
 
         for i in xrange(len(line)):
 
@@ -53,9 +55,8 @@ def translate(filename, as_string=False, segment=False):
                 try:
 
                     # grab the best English translation of a word
-                    # (change 'optimized' to "baseline" to get a baseline
-                    # translation)
-                    token = defSelector(i, line, 'baseline')
+                    # change kw to "baseline" to get a baseline translation
+                    token = defSelector(i, line, kw)
 
                     # if the token is a verb, append the Chinese word, English
                     # verb, and the inflection
