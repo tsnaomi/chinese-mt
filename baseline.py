@@ -106,8 +106,6 @@ def _prettify(text):
 
     return text
 
-tense_dict = {'XX': 'past', }
-
 
 if __name__ == '__main__':
     print '\n\033[4mList translation\033[0m:\n'
