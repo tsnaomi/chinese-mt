@@ -61,6 +61,10 @@ def baseline_translate(filename, as_string=False, segment=False):
                     # change command to "baseline" if want to compare with original
                     token = defSelector(i, line, "optimized")
 
+                    if isinstance(token, tuple):
+                        translation.append([word, token[0], token[1]])
+                        continue
+
                 except (KeyError, IndexError):
                     # append the token itself
                     token = word
@@ -82,6 +86,15 @@ def _segment(filename):
     return segmented
 
 
+def _translate_as_string(list_translation):
+    # convert a list translation into a string translation
+    string_translation = [t[1] for t in list_translation]
+    string_translation = ' '.join(string_translation)
+    string_translation = _prettify(string_translation)
+
+    return string_translation
+
+
 def _prettify(text):
     # remove improper whitespacing around punctuation
     text = text.replace(' ,', ',').replace(' .', '.').replace('\n ', '\n')
@@ -93,14 +106,7 @@ def _prettify(text):
 
     return text
 
-
-def _translate_as_string(list_translation):
-    # convert a list translation into a string translation
-    string_translation = [t[1] for t in list_translation]
-    string_translation = ' '.join(string_translation)
-    string_translation = _prettify(string_translation)
-
-    return string_translation
+tense_dict = {'XX': 'past', }
 
 
 if __name__ == '__main__':
