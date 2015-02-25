@@ -3,21 +3,19 @@
 import re
 import subprocess
 
-# from dictionary import dictionary
 from defSelector import defSelector, getWord
 from sentenceArranger import sentenceArranger
 
 
-def baseline_translate(filename, as_string=False, segment=False):
+def translate(filename, as_string=False, segment=False):
     '''Return a primitive translation of a file from Chinese into English.
 
-    This function produces a word-by-word translation. If 'as_string' is True,
-    the translation is returned as a string. Otherwise, the translation is
-    returned as a list.
+    If 'as_string' is True, the translation is returned as a string. Otherwise,
+    the translation is returned as a list.
 
     If 'segment' is True, the Stanford segmenter will be used to segment the
     file. Therefore, if 'segment' is False, the file specified by filename
-    should already be segmented. Beware: the segmenter is a tads slow.
+    should already be segmented. Beware: the segmenter is a tad slow.
     '''
     punctuation = '，。、'
     punct_dict = {'，': ',', '、': ',', '。': '.'}
@@ -40,7 +38,7 @@ def baseline_translate(filename, as_string=False, segment=False):
 
         # rearrange sentence to make it English-comprehensible
         # change 'optimized' to 'baseline' to get a baseline translation
-        line = sentenceArranger(line, 'optimized')
+        line = sentenceArranger(line, 'baseline')
 
         for i in xrange(len(line)):
 
@@ -57,7 +55,7 @@ def baseline_translate(filename, as_string=False, segment=False):
                     # grab the best English translation of a word
                     # (change 'optimized' to "baseline" to get a baseline
                     # translation)
-                    token = defSelector(i, line, 'optimized')
+                    token = defSelector(i, line, 'baseline')
 
                     # if the token is a verb, append the Chinese word, English
                     # verb, and the inflection
@@ -110,6 +108,6 @@ def _prettify(text):
 
 if __name__ == '__main__':
     print '\n\033[4mList translation\033[0m:\n'
-    print baseline_translate('tagger/tagged_dev.txt')
+    print translate('tagger/tagged_dev.txt')
     print '\n\033[4mString translation\033[0m:\n'
-    print baseline_translate('tagger/tagged_dev.txt', as_string=True)
+    print translate('tagger/tagged_dev.txt', as_string=True)
