@@ -66,6 +66,15 @@ def _segment(filename):
     return segmented
 
 
+def _translate_as_string(list_translation):
+    # convert a list translation into a string translation
+    string_translation = [t[1] for t in list_translation]
+    string_translation = ' '.join(string_translation)
+    string_translation = _prettify(string_translation)
+
+    return string_translation
+
+
 def _prettify(text):
     # remove improper whitespacing around punctuation
     text = text.replace(' ,', ',').replace(' .', '.').replace('\n ', '\n')
@@ -76,15 +85,6 @@ def _prettify(text):
         text = text[:i] + text[i].upper() + text[i+1:]
 
     return text
-
-
-def _translate_as_string(list_translation):
-    # convert a list translation into a string translation
-    string_translation = [t[1] for t in list_translation]
-    string_translation = ' '.join(string_translation)
-    string_translation = _prettify(string_translation)
-
-    return string_translation
 
 
 if __name__ == '__main__':
