@@ -17,8 +17,7 @@ def sentenceArranger(sentence, option="optimized"):
 	if option=="optimized":
 		clauses = retrieveClauseList(sentence)
 		for clause in clauses:
-			if(includesNN_DEC_NN(clause)): continue
-
+			clause = checkNN_DEC_NN(clause)
 		return recombineClauses(clauses)
 
 
@@ -27,7 +26,12 @@ def sentenceArranger(sentence, option="optimized"):
 #############################################
 
 def includesNN_DEC_NN(clause):
-	return True
+	tagString = deriveTags(clause)
+	if "NN DEC NN" in tagString: return True
+	else: return False 
+
+def checkNN_DEC_NN(clause):
+
 
 #############################################
 # Useful utility functions

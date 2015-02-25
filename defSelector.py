@@ -71,6 +71,8 @@ def chooseNoun(word, index, sentence):
 def chooseMeasureWord(word, index, sentence):
 	return getDictEntryByPrecedence(word, ['measure word', 'n'])
 
+#Only helper to return tuple of two items (return word, tense)
+#tense returned in all caps as second item present, past, future, progressive, perfective ("have done something"), infinitive
 def chooseVerb(word, index, sentence):
 	return getDictEntryByPrecedence(word, ['v'])
 
