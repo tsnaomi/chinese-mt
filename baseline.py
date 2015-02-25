@@ -61,6 +61,10 @@ def baseline_translate(filename, as_string=False, segment=False):
                     # change command to "baseline" if want to compare with original
                     token = defSelector(i, line, "optimized")
 
+                    if isinstance(token, tuple):
+                        translation.append([word, token[0], token[1]])
+                        continue
+
                 except (KeyError, IndexError):
                     # append the token itself
                     token = word
@@ -101,6 +105,8 @@ def _prettify(text):
         text = text[:i] + text[i].upper() + text[i+1:]
 
     return text
+
+tense_dict = {'XX': 'past', }
 
 
 if __name__ == '__main__':
