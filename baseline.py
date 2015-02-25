@@ -3,8 +3,8 @@
 import re
 import subprocess
 
-from dictionary import dictionary
-from defSelector import defSelector, getTag, getWord
+# from dictionary import dictionary
+from defSelector import defSelector, getWord
 from sentenceArranger import sentenceArranger
 
 
@@ -17,38 +17,34 @@ def baseline_translate(filename, as_string=False, segment=False):
 
     If 'segment' is True, the Stanford segmenter will be used to segment the
     file. Therefore, if 'segment' is False, the file specified by filename
-    should already be segmented. Beware: the segmenter is a tad slow.
+    should already be segmented. Beware: the segmenter is a tads slow.
     '''
     punctuation = '，。、'
     punct_dict = {'，': ',', '、': ',', '。': '.'}
     translation = []
 
-    ## Assume we will not use the segmenter so this is commented out. If use will have to update
-    # if segment:
-    #     # segment the file to be translated
-    #     segmented = _segment(filename)
-    #     text = segmented.replace('\n', ' \n ').strip(' ').split(' ')
-    # else:
+    if segment:
+        # segment the file to be translated
+        segmented = _segment(filename)
+        text = segmented.splitlines(True)
 
-    # open the file to be translated
-    with open(filename, 'r') as f:
-        lines = f.readlines()
-    
-    text = []
-    for line in lines:
-        line = line.replace('\n', ' \n').strip(' ').split(' ')
-        text.append(line)
+    else:
+        # open the file to be translated
+        with open(filename, 'r') as f:
+            text = f.readlines()
 
     for line in text:
 
-        # rearrange sentence to make it english-comprehensible
-        # change command to "baseline" if want to compare with original
-        line = sentenceArranger(line, "optimized")
-        
+        # split sentence into a list
+        line = line.strip(' ').replace('\n', ' \n').split(' ')
+
+        # rearrange sentence to make it English-comprehensible
+        # change 'optimized' to 'baseline' to get a baseline translation
+        line = sentenceArranger(line, 'optimized')
+
         for i in xrange(len(line)):
 
             word = getWord(line[i])
-            POStoken = getTag(line[i])
 
             if word in punctuation:
                 # preserve punctuation in translation
@@ -57,10 +53,14 @@ def baseline_translate(filename, as_string=False, segment=False):
             else:
 
                 try:
-                    # grab the first English translation of the word
-                    # change command to "baseline" if want to compare with original
-                    token = defSelector(i, line, "optimized")
 
+                    # grab the best English translation of a word
+                    # (change 'optimized' to "baseline" to get a baseline
+                    # translation)
+                    token = defSelector(i, line, 'optimized')
+
+                    # if the token is a verb, append the Chinese word, English
+                    # verb, and the inflection
                     if isinstance(token, tuple):
                         translation.append([word, token[0], token[1]])
                         continue
@@ -97,7 +97,8 @@ def _translate_as_string(list_translation):
 
 def _prettify(text):
     # remove improper whitespacing around punctuation
-    text = text.replace(' ,', ',').replace(' .', '.').replace('\n ', '\n')
+    text = text.replace(' ,', ',').replace('  ', ' ').replace(' .', '.')
+    text = text.replace('\n ', '\n')
 
     # capitalize the first letter of each sentence
     naughty_lowercase = [m.end(0) for m in re.finditer(r'^|\n', text)][:-1]
