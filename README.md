@@ -5,13 +5,13 @@ A Direct Machine Translation of Chinese
 To use baseline.py:
 
 ```
-from baseline import baseline_translate
+from baseline import translate
 
-# get a list representation of the baseline translation of the dev set
+# get a list representation of the translation of the dev set
 # here, bt is a list of lists, with the latter of the form ['说到', 'refer']
 bt = baseline_translate('segmented-ctb-dev.txt')
 
-# get a string representation of the baseline translation of the dev set
+# get a string representation of the translation of the dev set
 bt = baseline_translate('segmented-ctb-dev.txt', as_string=True)
 ```
 
