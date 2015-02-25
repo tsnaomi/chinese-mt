@@ -1,7 +1,8 @@
-import re
+﻿import re
 import subprocess
 
 from dictionary import dictionary
+# from sentenceArranger import verbInPrepPhrase
 
 ########################################################			
 #Central interface for selecting right dictionary entry,
@@ -74,16 +75,69 @@ def chooseMeasureWord(word, index, sentence):
 #Only helper to return tuple of two items (return word, tense)
 #tense returned in all caps as second item present, past, future, progressive, perfective ("have done something"), infinitive
 def chooseVerb(word, index, sentence):
-	return getDictEntryByPrecedence(word, ['v'])
+	verb = getDictEntryByPrecedence(word, ['v'])
+	if index == 0: case = "PROGRESSIVE"
+	elif verbInPrepPhrase(index, sentence): case = "INFINITIVE"
+	elif verbFollowingVerb(index, sentence): case = "INFINITIVE"
+	elif verbHasProgressiveModifier(index, sentence): case = "PROGRESSIVE"
+	elif verbHasPerfectiveModifier(index, sentence): case = "PERFECTIVE"
+	else: case = "PRESENT"
+
+	return verb, case
 
 def chooseAdverb(word, index, sentence):
-	return getDictEntryByPrecedence(word, ['adv', 'adj'])
 
+	bestOption = getFirstDictEntryofType(word, 'adv')
+	if bestOption != None: return bestOption
+
+	bestOption = getFirstDictEntryofType(word, 'adj')
+	if bestOption != None: 
+		if bestOption == "good": return 'well'
+		elif bestOption[-1] == 'y': return bestOption[:-1] + "ily"
+		elif bestOption == "major": return "mainly"
+		elif bestOption == "big": return "greatly" 
+		else: return bestOption + "ly"
+
+	bestOption = getFirstDictEntryofType(word, 'v')
+	if bestOption != None:
+		if bestOption == "look": return "seemingly"
+		else: return bestOption + "ingly"
+
+	return getFirstDictEntry(word)
+
+
+def verbHasProgressiveModifier(index, sentence):
+	demarcation = set(["VV", "VC", "VE"])
+	index -= 1
+	while index >= 0 and getTag(sentence[index]) not in demarcation:
+		if getWord(sentence[index]) == "正" or getWord(sentence[index]) == "在":
+			return True
+		index -= 1
+	return False
+
+
+def verbHasPerfectiveModifier(index, sentence):
+	demarcation = set(["VV", "VC", "VE"])
+	index += 1
+	while index < len(sentence) and getTag(sentence[index]) not in demarcation:
+		if getWord(sentence[index]) == "了": return True
+		index += 1
+	return False
+
+def verbFollowingVerb(index, sentence):
+	if index < 1: return False
+	if getTag(sentence[index - 1]) != "VV": return False
+	return True
+
+def verbInPrepPhrase(index, sentence):
+	if index < 2: return False
+	if getTag(sentence[index - 1]) != "NN": return False
+	if getTag(sentence[index - 2]) != "P": return False
+	return True
 
 #############################################
 # Useful utility functions
 #############################################
-
 
 def getTag(token):
 	if token.split("#")[0] == "\n": return "\n"

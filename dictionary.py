@@ -390,10 +390,11 @@ dictionary = {
         ('dispute', 'n'),
         ],
     '越来越': [
-        ('more and more', 'adv'),
+        ('increasingly', 'adv'),
         ],
     '主要': [
         ('major', 'adj'),
+        ('main', 'adj')
         ],
     '关于': [
         ('with reference to', 'prep'),
