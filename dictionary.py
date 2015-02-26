@@ -258,7 +258,7 @@ dictionary = {
         ('they', 'pron'),
         ],
     '最': [
-        ('most', 'adv'),
+        ('MOST', 'adv'),
         ],
     '重要': [
         ('important', 'adj'),
