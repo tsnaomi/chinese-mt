@@ -5,6 +5,7 @@ import re
 import subprocess
 
 from defSelector import defSelector, getWord
+from PorterStemmer import PorterStemmer
 from sentenceArranger import sentenceArranger
 
 
@@ -15,8 +16,14 @@ def translate(filename, as_string=False, segment=False, kw='optimized'):
     # get a word-by-word translation
     translation = baseline_translate(filename, segment, kw)
 
-    # position copulas before adverbs and delete copulas preceding prepositions
-    translation = finesse_copulas(translation)
+    if kw == 'optimized':
+
+        # position copulas before adverbs and delete copulas preceding
+        # prepositions
+        translation = finesse_copulas(translation)
+
+        # add gerunds to sentence initial verbs
+        translation = gerundize_verbs(translation)
 
     # if as_string is True, convert translation into a string
     if as_string:
@@ -117,17 +124,18 @@ def _prettify(text):
     return text
 
 
-# def English_POS_tag(text):
-#     tokenized = [w[1] for w in text]
-#     tagged = nltk.pos_tag(tokenized)
+# Post-Processing -------------------------------------------------------------
 
-#     return tagged
+Porter = PorterStemmer()
+
+with open('EnglishWords.txt') as f:
+    EnglishWords = f.read()
 
 
 def finesse_copulas(text):
     '''Position copulas before ADVs and delete copulas that precede Ps.'''
-    # a wrapper around nltk.pos_tag, which only accepts a tokenized word lists
-    tag = lambda w: nltk.pos_tag([w, ])
+    # wrapper around nltk.pos_tag, which only accepts a tokenized list of words
+    tag = lambda w: nltk.pos_tag([w, ])[0][1]
 
     for i, word in enumerate(text):
 
@@ -151,12 +159,35 @@ def finesse_copulas(text):
     return text
 
 
-# TODO
+def gerundize_verbs(text):
+    '''Have sentence-initial verbs take gerunds.'''
+    # wrapper around nltk.pos_tag, which only accepts a tokenized list of words
+    tag = lambda w: nltk.pos_tag([w, ])[0][1]
 
-# 4. have verb-initial sentences take gerunds (N)
+    for i, word in enumerate(text):
+
+        # if the word is sentence-initial...
+        if i == 0 or text[i-1][1] == '\n':
+
+            # # if the word is a verb...
+            if tag(word[1]).startswith(('V', 'NN')):  # REFINE
+                stemmed = Porter.stem(word[1])
+                gerundive1 = stemmed + 'ing'
+                gerundive2 = stemmed + stemmed[-1] + 'ing'
+
+                if gerundive1 in EnglishWords:
+                    text[i][1] = gerundive1
+
+                elif gerundive2 in EnglishWords:
+                    text[i][1] = gerundive2
+
+    return text
+
+
+# -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    # print '\n\033[4mList translation\033[0m:\n'
-    # print translate('tagger/tagged_dev.txt')
+    print '\n\033[4mList translation\033[0m:\n'
+    print translate('tagger/tagged_dev.txt')
     print '\n\033[4mString translation\033[0m:\n'
-    print translate('tagger/tagged_dev.txt', as_string=True, kw='baseline')
+    print translate('tagger/tagged_dev.txt', as_string=True, kw='optimized')
