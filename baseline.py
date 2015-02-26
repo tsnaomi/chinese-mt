@@ -42,9 +42,9 @@ def translate(filename, as_string=False, segment=False, kw='optimized'):
         # change kw to 'baseline' to get a baseline translation
         line = sentenceArranger(line, kw)
 
-        for i in xrange(len(line)):
+        for i, word in enumerate(line):
 
-            word = getWord(line[i])
+            word = getWord(word)
 
             if word in punctuation:
                 # preserve punctuation in translation
