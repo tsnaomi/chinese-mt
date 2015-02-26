@@ -1,5 +1,6 @@
 # coding=utf-8
 
+import nltk
 import re
 import subprocess
 
@@ -13,6 +14,9 @@ def translate(filename, as_string=False, segment=False, kw='optimized'):
     '''Return a Chinese to English translation.'''
     # get a word-by-word translation
     translation = baseline_translate(filename, segment, kw)
+
+    # position copulas before adverbs and delete copulas preceding prepositions
+    translation = finesse_copulas(translation)
 
     # if as_string is True, convert translation into a string
     if as_string:
@@ -113,17 +117,46 @@ def _prettify(text):
     return text
 
 
-def finesse_copula():
-    pass
+# def English_POS_tag(text):
+#     tokenized = [w[1] for w in text]
+#     tagged = nltk.pos_tag(tokenized)
+
+#     return tagged
+
+
+def finesse_copulas(text):
+    '''Position copulas before ADVs and delete copulas that precede Ps.'''
+    # a wrapper around nltk.pos_tag, which only accepts a tokenized word lists
+    tag = lambda w: nltk.pos_tag([w, ])
+
+    for i, word in enumerate(text):
+
+        if word[1] == 'BE':
+
+            # move copulas before adverbs
+            if i != 0 and tag(text[i-1][1]) == 'RB':
+
+                prev = i - 1
+                while i > 0 and tag(text[prev][1]) == 'RB':
+                    prev -= 1
+
+                text.pop(i)
+                text.insert(prev, word)
+
+            # remove copulas preceding prepositional phrases
+            # 'IN' is the tag for prepositions
+            elif len(text) >= i + 1 and tag(text[i+1][1]) == 'IN':
+                text.pop(i)
+
+    return text
+
 
 # TODO
 
-# 1. remove BEs preceding prepositional phrases (N)
-# 2. move copula before adverbs (N)
 # 4. have verb-initial sentences take gerunds (N)
 
 if __name__ == '__main__':
-    print '\n\033[4mList translation\033[0m:\n'
-    print translate('tagger/tagged_dev.txt')
+    # print '\n\033[4mList translation\033[0m:\n'
+    # print translate('tagger/tagged_dev.txt')
     print '\n\033[4mString translation\033[0m:\n'
-    print translate('tagger/tagged_dev.txt', as_string=True)
+    print translate('tagger/tagged_dev.txt', as_string=True, kw='baseline')
