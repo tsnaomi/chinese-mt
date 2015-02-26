@@ -10,6 +10,18 @@ from sentenceArranger import sentenceArranger
 # To get a baseline translation, pass kw='baseline' to translate().
 
 def translate(filename, as_string=False, segment=False, kw='optimized'):
+    '''Return a Chinese to English translation.'''
+    # get a word-by-word translation
+    translation = baseline_translate(filename, segment, kw)
+
+    # if as_string is True, convert translation into a string
+    if as_string:
+        translation = translate_as_string(translation)
+
+    return translation
+
+
+def baseline_translate(filename, segment, kw):
     '''Return a primitive translation of a file from Chinese into English.
 
     If 'as_string' is True, the translation is returned as a string. Otherwise,
@@ -68,10 +80,6 @@ def translate(filename, as_string=False, segment=False, kw='optimized'):
 
             translation.append([word, token])
 
-    # if as_string is True, convert translation into a string
-    if as_string:
-        translation = _translate_as_string(translation)
-
     return translation
 
 
@@ -83,7 +91,7 @@ def _segment(filename):
     return segmented
 
 
-def _translate_as_string(list_translation):
+def translate_as_string(list_translation):
     # convert a list translation into a string translation
     string_translation = [t[1] for t in list_translation]
     string_translation = ' '.join(string_translation)
@@ -104,6 +112,15 @@ def _prettify(text):
 
     return text
 
+
+def finesse_copula():
+    pass
+
+# TODO
+
+# 1. remove BEs preceding prepositional phrases (N)
+# 2. move copula before adverbs (N)
+# 4. have verb-initial sentences take gerunds (N)
 
 if __name__ == '__main__':
     print '\n\033[4mList translation\033[0m:\n'
