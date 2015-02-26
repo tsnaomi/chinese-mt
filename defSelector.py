@@ -26,12 +26,15 @@ def defSelector(index, sentence, option="optimized"):
 		elif tag == "P": return choosePreposition(word, index, sentence)
 		elif tag == "CC" or tag == "CS": return chooseConjunction(word, index, sentence) 
 		elif tag == "LC": return chooseLocalizer(word, index, sentence)
-		elif tag == "VA" or tag == "JJ": return chooseAdjective(word, index, sentence)
+		elif tag == "VA": return choosePredAdjective(word, index, sentence)
+                elif tag == "JJ": return chooseAttrAdjective(word, index, sentence)
 		elif tag == "PN" or tag == "DT": return choosePronoun(word, index, sentence)
 		elif tag == "SP": return chooseSentenceFinalParticle(word, index,sentence)
 		elif tag == "AS": return chooseAspectParticle(word, index, sentence)
 		elif tag == "DEV": return chooseMannerParticle(word, index, sentence)
 		elif tag == "MSP": return chooseOtherParticle(word, index, sentence)
+		elif tag == "DEC": return complementizerDE(word, index, sentence)
+		elif tag == "DEG": return genitiveDE(word, index, sentence)
 		else: return getFirstDictEntry(word)
 
 
@@ -54,7 +57,15 @@ def chooseSentenceFinalParticle(word, index, sentence):
 def choosePronoun(word, index, sentence):
 	return getDictEntryByPrecedence(word, ['pron'])
 
-def chooseAdjective(word, index, sentence):
+def choosePredAdjective(word, index, sentence):
+  # predicative adjectives; add copula before
+	base = chooseAttrAdjective(word, index, sentence)
+	if index < len(sentence) and getWord(sentence[index+1]) == "的":
+		return base
+	return "be " + base
+
+def chooseAttrAdjective(word, index, sentence):
+  # attributive adjectives; no copula before
 	return getDictEntryByPrecedence(word, ['adj'])
 
 def chooseLocalizer(word, index, sentence):
@@ -92,19 +103,29 @@ def chooseAdverb(word, index, sentence):
 
 	bestOption = getFirstDictEntryofType(word, 'adj')
 	if bestOption != None: 
-		if bestOption == "good": return 'well'
-		elif bestOption[-1] == 'y': return bestOption[:-1] + "ily"
-		elif bestOption == "major": return "mainly"
-		elif bestOption == "big": return "greatly" 
+		if bestOption[-1] == 'y': return bestOption[:-1] + "ily"
+#		elif bestOption == "good": return 'well'
+#		elif bestOption == "major": return "mainly"
+#		elif bestOption == "big": return "greatly" 
 		else: return bestOption + "ly"
 
 	bestOption = getFirstDictEntryofType(word, 'v')
 	if bestOption != None:
-		if bestOption == "look": return "seemingly"
-		else: return bestOption + "ingly"
+#		if bestOption == "look": return "seemingly"
+#		else: return bestOption + "ingly"
+		return bestOption + "ingly"
 
 	return getFirstDictEntry(word)
 
+def complementizerDE(word, index, sentence):
+
+	return "THAT"
+
+def genitiveDE(word, index, sentence):
+	if index > 0 and getTag(sentence[index-1]) in ["VA", "JJ"]:
+		return ""
+
+	return "'s"
 
 def verbHasProgressiveModifier(index, sentence):
 	demarcation = set(["VV", "VC", "VE"])
