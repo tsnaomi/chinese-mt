@@ -34,7 +34,6 @@ def translate(filename, as_string=False, segment=False, kw='optimized'):
             text = f.readlines()
 
     for line in text:
-
         # split sentence into a list
         line = line.strip(' ').replace('\n', ' \n').split(' ')
 
@@ -53,7 +52,6 @@ def translate(filename, as_string=False, segment=False, kw='optimized'):
             else:
 
                 try:
-
                     # grab the best English translation of a word
                     # change kw to "baseline" to get a baseline translation
                     token = defSelector(i, line, kw)
