@@ -1,0 +1,4 @@
+# under current dir
+
+./stanford-parser-full-2015-01-30/lexparser-lang.sh Chinese 30 chineseFactored.ser.gz parsed ../segmenter/segmented-ctb.txt 
+mv ../segmenter/segmented-ctb.txt.parsed.30.stp segmented-ctb-parsed-30-stp.txt
