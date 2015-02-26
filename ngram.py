@@ -162,7 +162,7 @@ if __name__ == '__main__':
         ('genesis of chopsticks', 'chopsticks of genesis'),
         ('state of chopsticks', 'state use chopsticks'),
         ('person of chopsticks', 'person use chopsticks'),
-        ('inventors of chopsticks', 'inventors admire chopsticks')
+        ('inventors of chopsticks', 'inventors admire chopsticks'),
         ]
 
     for c in comparisons:
