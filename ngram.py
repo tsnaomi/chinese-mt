@@ -16,7 +16,7 @@ class Train:
         self.train(corpus)
         self.dump()
 
-    def train(self, corpus):
+    def train(self, corpus):  # RE-TRAIN
         '''Train a stupid backoff language model using trigrams.'''
         for sentence in corpus:
 
@@ -78,8 +78,10 @@ class StupidBackoffTrigramLanguageModel:
         except ImportError:
             # Train(corpus)
             # from _ngrams import unigrams, bigrams, trigrams, total
-            raise ImportError('If you get this error, do NOT uncomment Train(corpus).'
-                'It takes a few hours to train and store the data.')
+            raise ImportError(
+                'If you get this error, do NOT uncomment Train(corpus).'
+                'It takes a few hours to train and store the data.'
+                )
 
         self.unigrams = unigrams
         self.bigrams = bigrams
@@ -121,6 +123,9 @@ class StupidBackoffTrigramLanguageModel:
             score += math.log(C_count * 0.4)
             score -= math.log(self.total + len(self.unigrams))
 
+            score /= max(len(sequence) - 2, 1)
+            # score /= len(sequence)
+
         return score
 
 
@@ -128,24 +133,26 @@ if __name__ == '__main__':
     m3 = StupidBackoffTrigramLanguageModel()
 
     candidates = [
-        'China was under the sun',
-        'China is under the sun',
-        'China to be under the sun',
-        'China being under the sun',
-        'China are under the sun',
-        'referring chopsticks\' genesis',
-        'referring to chopsticks\' genesis',
-        'referring to the chopsticks\' genesis',
-        'referring to genesis of chopsticks',
-        'referring to the genesis of chopstikcs',
-        'regarding the chopsticks\' genesis',
-        'regarding the genesis of chopsticks',
-        "China's trade",
-        "trade of China",
-        'it am',
-        'it be',
-        'trade dispute',
-        'trade is dispute',
+        # 'China was under the sun',
+        # 'China is under the sun',
+        # 'China to be under the sun',
+        # 'China being under the sun',
+        # 'China are under the sun',
+        # 'referring chopsticks\' genesis',
+        # 'referring to chopsticks\' genesis',
+        # 'referring to the chopsticks\' genesis',
+        # 'referring to genesis of chopsticks',
+        # 'referring to the genesis of chopstikcs',
+        # 'regarding the chopsticks\' genesis',
+        # 'regarding the genesis of chopsticks',
+        # "China's trade",
+        # "trade of China",
+        # 'it am',
+        # 'it be',
+        # 'trade dispute',
+        # 'trade is dispute',
+        'use forks have',
+        'use forks to have',
         ]
 
     for t in candidates:
