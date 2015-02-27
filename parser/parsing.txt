@@ -1,4 +1,7 @@
-# under current dir
+# execute under current dir
+# should have stanford-parser-full-2015-01-30/
+# also, under the parser folder, should have extracted chineseFactored.ser.gz from stanford-parser-3.5.1-models.jar
+
 
 ./stanford-parser-full-2015-01-30/lexparser-lang.sh Chinese 30 chineseFactored.ser.gz parsed ../segmenter/segmented-ctb.txt 
 mv ../segmenter/segmented-ctb.txt.parsed.30.stp segmented-ctb-parsed-30-stp.txt
