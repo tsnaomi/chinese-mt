@@ -162,7 +162,7 @@ def _parse(segmented_text):
     return parsed
 
 
-def _reorder(parsed_text):
+def _reorder(parsed_text):   # TODO
     # from nltk.tree import Tree
     # from .parser.sentenceReorder import (
     #     reorder,
@@ -427,6 +427,13 @@ def inflect_verbs(text):
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
+
+    def execute_reordering():
+        cmd = 'cd parser; python sentenceReorder.py; cd ..'
+        subprocess.call(cmd, shell=True)
+
+    execute_reordering()
+
     # # tagged tranlsation
     # print '\n\033[4mTagged translation\033[0m:\n'
     # print nltk.pos_tag(translate('parser/dev-reordered-30-stp.txt'))
