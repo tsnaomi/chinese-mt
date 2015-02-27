@@ -6,6 +6,7 @@ import subprocess
 
 from defSelector import defSelector, getWord
 from ngram import StupidBackoffTrigramLanguageModel
+from pattern.en import lexeme, parse, superlative
 from PorterStemmer import PorterStemmer
 
 
@@ -188,8 +189,6 @@ stupid = StupidBackoffTrigramLanguageModel()
 with open('EnglishWords.txt') as f:
     EnglishWords = f.read()
 
-from pattern.en import lexeme, superlative
-
 
 def postprocess(text):
     '''Apply functions to a translation to achieve modest English fluency.'''
@@ -204,7 +203,7 @@ def postprocess(text):
     translation = render_superlatives(tokenized)
 
     # strip markers
-    translation = strip_markers(translation)
+    # translation = strip_markers(translation)
 
     # position copulas before adverbs
     translation = finesse_copulas(translation)
@@ -216,6 +215,9 @@ def postprocess(text):
     translation = under_the_sun_idiom(translation)
 
     for i in range(2):
+        # position copulas before adverbs
+        translation = finesse_copulas(translation)
+
         # instert determiners
         translation = insert_determiners(translation)
 
@@ -230,8 +232,11 @@ def select_best_candidate(candidates):
     # assumes that candidates is a list of tuples of the form:
     # ('previous-word target-word next-word', 'target-word')
     # here, the target word for the highest scored trigram is returned
-    scores = [(stupid.score(c[0].strip().split()), c[1]) for c in candidates]
-    return max(scores)[1]
+    candidates = [(c[0].replace('  ', ' ').strip(), c[1]) for c in candidates]
+    scores = [(stupid.score(c[0].split()), c[0], c[1]) for c in candidates]
+    best = max(scores)
+    # print best
+    return best[2]
 
 
 def refine_lookup(text):
@@ -303,8 +308,8 @@ def finesse_copulas(text):
 
             # remove copulas preceding prepositional phrases
             # 'IN' is the tag for prepositions
-            # elif i + 1 <= len(text) and tagged[i+1][1] == 'IN':
-            #     text[i] = ''
+            elif i + 1 <= len(text) and tagged[i+1][1] == 'IN':
+                text[i] = ''
 
     return text
 
@@ -387,7 +392,7 @@ def inflect_verbs(text):
 
             for v in inflections:
                 previous1 = text[i-2] if i > 1 else ''
-                previous2 = text[i-2] if i > 1 else ''
+                previous2 = text[i-1] if i > 1 else ''
                 next_ = text[i+1] if i + 1 != len(text) else ''
                 cand1 = ('%s %s %s %s' % (
                     previous1,
@@ -415,8 +420,6 @@ if __name__ == '__main__':
     print '\n\033[4mTagged translation\033[0m:\n'
     print nltk.pos_tag(translate('parser/dev-reordered-30-stp.txt'))
     print '\n\033[4mString translation\033[0m:\n'
-    print translate(
-        'parser/dev-reordered-30-stp.txt',
-        as_string=True,
-        kw='optimized',
-        )
+    translation = translate('parser/dev-reordered-30-stp.txt', as_string=True)
+    print translation
+    # print parse(translation)
