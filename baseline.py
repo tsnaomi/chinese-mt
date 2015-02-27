@@ -6,7 +6,8 @@ import subprocess
 
 from defSelector import defSelector, getWord
 from PorterStemmer import PorterStemmer
-from sentenceArranger import sentenceArranger
+# from sentenceArranger import sentenceArranger
+# from LanguageModels import StupidBackoffTrigramModel
 
 
 # To get a baseline translation, pass kw='baseline' to translate().
@@ -22,7 +23,7 @@ def translate(filename, as_string=False, segment=False, kw='optimized'):
         # prepositions
         translation = finesse_copulas(translation)
 
-        # add gerunds to sentence initial verbs
+        # add gerunds to clause-initial verbs
         translation = gerundize_verbs(translation)
 
     # if as_string is True, convert translation into a string
@@ -62,7 +63,7 @@ def baseline_translate(filename, segment, kw):
 
         # rearrange sentence to make it English-comprehensible
         # change kw to 'baseline' to get a baseline translation
-        line = sentenceArranger(line, kw)
+        # line = sentenceArranger(line, kw)
 
         for i, word in enumerate(line):
 
@@ -126,7 +127,7 @@ def _prettify(text):
 
 # Post-Processing -------------------------------------------------------------
 
-Porter = PorterStemmer()
+porter = PorterStemmer()
 
 with open('EnglishWords.txt') as f:
     EnglishWords = f.read()
@@ -139,7 +140,7 @@ def finesse_copulas(text):
 
     for i, word in enumerate(text):
 
-        if word[1] == 'BE':
+        if word[1] == 'be':
 
             # move copulas before adverbs
             if i != 0 and tag(text[i-1][1]) == 'RB':
@@ -149,7 +150,7 @@ def finesse_copulas(text):
                     prev -= 1
 
                 text.pop(i)
-                text.insert(prev, word)
+                text.insert(prev + 1, word)
 
             # remove copulas preceding prepositional phrases
             # 'IN' is the tag for prepositions
@@ -166,12 +167,12 @@ def gerundize_verbs(text):
 
     for i, word in enumerate(text):
 
-        # if the word is sentence-initial...
-        if i == 0 or text[i-1][1] == '\n':
+        # if the word is clause-initial...
+        if i == 0 or text[i-1][1] == '\n' or text[i-1][1] == ',':
 
             # # if the word is a verb...
             if tag(word[1]).startswith(('V', 'NN')):  # REFINE
-                stemmed = Porter.stem(word[1])
+                stemmed = porter.stem(word[1])
                 gerundive1 = stemmed + 'ing'
                 gerundive2 = stemmed + stemmed[-1] + 'ing'
 
@@ -184,10 +185,25 @@ def gerundize_verbs(text):
     return text
 
 
+# N-gram Playground -----------------------------------------------------------
+
+# TODO
+
+# 1. inflect nouns, e.g., plurality, case (n-grams) (N)
+# 2. select accurate determiners (n-grams) (N)
+# 3. inflect verbs, e.g., gerunds, infinitives (n-grams) (N)
+# 4. select best prepositions (n-grams) (N)
+
+# stupid = StupidBackoffTrigramModel()
+
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    print '\n\033[4mList translation\033[0m:\n'
-    print translate('tagger/tagged_dev.txt')
+    # print '\n\033[4mList translation\033[0m:\n'
+    # print translate('parser/dev-reordered-30-stp.txt')
     print '\n\033[4mString translation\033[0m:\n'
-    print translate('tagger/tagged_dev.txt', as_string=True, kw='optimized')
+    print translate(
+        'parser/dev-reordered-30-stp.txt',
+        as_string=True,
+        kw='optimized',
+        )
