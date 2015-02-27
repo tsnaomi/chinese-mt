@@ -66,7 +66,10 @@ def choosePredAdjective(word, index, sentence):
 
 def chooseAttrAdjective(word, index, sentence):
   # attributive adjectives; no copula before
-	return getDictEntryByPrecedence(word, ['adj'])
+	base = getDictEntryByPrecedence(word, ['adj'])
+	if index < len(sentence) and getWord(sentence[index+1]) == "地":
+		return base + "ly"
+	return base 
 
 def chooseLocalizer(word, index, sentence):
 	return getDictEntryByPrecedence(word, ['adj', 'prep'])
@@ -171,10 +174,15 @@ def isType(token, type):
 	if getTag(token) == type: return True
 	return False
 
-def getDictEntryByPrecedence(word, typelist):
+def getDictEntryByPrecedence(word, typelist, result="multiple"):
+	if result == "all":
+		return '/'.join(getAllDictEntries(word))
 	for t in typelist:
-		bestOption = getFirstDictEntryofType(word, t)
-		if bestOption != None: return bestOption
+		bestOption = getDictEntriesofType(word, t)
+		if bestOption: 
+			if result == "multiple": 
+				return '/'.join(bestOption)
+			else: return bestOption[0]
 	return getFirstDictEntry(word)
 
 def getFirstDictEntryofType(word, type):
@@ -182,5 +190,11 @@ def getFirstDictEntryofType(word, type):
 		if entry[1] == type: return entry[0]
 	return None
 
+def getDictEntriesofType(word, type):
+	return [entry[0] for entry in dictionary[word] if entry[1] == type]
+
 def getFirstDictEntry(word):
 	return dictionary[word][0][0]
+
+def getAllDictEntries(word):
+	return [entry[0] for entry in dictionary[word]]
