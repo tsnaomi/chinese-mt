@@ -9,15 +9,18 @@ from ngram import StupidBackoffTrigramLanguageModel
 from pattern.en import lexeme, parse, superlative
 from PorterStemmer import PorterStemmer
 
+# a wrapper around nltk.pos_tag, which only accepts a tokenized list of words
+tag = lambda w: nltk.pos_tag([w, ])[0][1]
+
 
 # To get a baseline translation, pass kw='baseline' to translate().
 
-def translate(filename, as_string=False, preprocess=False, kw='optimized'):
+def translate(filename, as_string=False, preprocess=False, kw='optimized', comparison=True):
     '''Return a Chinese to English translation.'''
     # get a word-by-word translation
     translation = baseline_translate(filename, preprocess, kw)
 
-    if kw == 'optimized':
+    if kw == 'optimized' and comparison:
         translation = postprocess(translation)
 
     # if as_string is True, convert translation into a string
@@ -91,6 +94,11 @@ def baseline_translate(filename, preprocess, kw):
 
 
 def _translate_as_string(list_translation):
+    # restore missingperiods
+    for i, word in enumerate(list_translation[2:], 2):
+        if word == '\n' and list_translation[i-1] != '.':
+            list_translation[i-1] += '.'
+
     # convert a list translation into a string translation
     string_translation = ' '.join(list_translation)
     string_translation = _prettify(string_translation)
@@ -179,10 +187,6 @@ def _reorder(parsed_text):
 # Post-Processing -------------------------------------------------------------
 
 
-# a wrapper around nltk.pos_tag, which only accepts a tokenized list of words
-tag = lambda w: nltk.pos_tag([w, ])[0][1]
-
-
 porter = PorterStemmer()
 stupid = StupidBackoffTrigramLanguageModel()
 
@@ -232,6 +236,10 @@ def select_best_candidate(candidates):
     # assumes that candidates is a list of tuples of the form:
     # ('previous-word target-word next-word', 'target-word')
     # here, the target word for the highest scored trigram is returned
+    # for c in candidates:
+    #     if c[1] == 'achieve':
+    #         from pprint import pprint
+    #         pprint(candidates, width=1)
     candidates = [(c[0].replace('  ', ' ').strip(), c[1]) for c in candidates]
     scores = [(stupid.score(c[0].split()), c[0], c[1]) for c in candidates]
     best = max(scores)
@@ -417,9 +425,11 @@ def inflect_verbs(text):
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    print '\n\033[4mTagged translation\033[0m:\n'
-    print nltk.pos_tag(translate('parser/dev-reordered-30-stp.txt'))
+    # print '\n\033[4mTagged translation\033[0m:\n'
+    # print nltk.pos_tag(translate('parser/dev-reordered-30-stp.txt'))
     print '\n\033[4mString translation\033[0m:\n'
-    translation = translate('parser/dev-reordered-30-stp.txt', as_string=True)
-    print translation
+    translation1 = translate('parser/dev-reordered-30-stp.txt', as_string=True)
+    print translation1
+    translation2 = translate('parser/dev-reordered-30-stp.txt', as_string=True, comparison=False)
+    print translation2
     # print parse(translation)

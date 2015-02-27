@@ -133,6 +133,19 @@ if __name__ == '__main__':
         'China to be under the sun',
         'China being under the sun',
         'China are under the sun',
+        'referring chopsticks\' genesis',
+        'referring to chopsticks\' genesis',
+        'referring to the chopsticks\' genesis',
+        'referring to genesis of chopsticks',
+        'referring to the genesis of chopstikcs',
+        'regarding the chopsticks\' genesis',
+        'regarding the genesis of chopsticks',
+        "China's trade",
+        "trade of China",
+        'it am',
+        'it be',
+        'trade dispute',
+        'trade is dispute',
         ]
 
     for t in candidates:
