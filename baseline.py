@@ -5,19 +5,30 @@ import re
 import subprocess
 
 from defSelector import defSelector, getWord
+# from nltk.tree import Tree
+from ngram import StupidBackoffTrigramLanguageModel
+# from .parser.sentenceReorder import (
+#     reorder,
+#     substituteNormalNumbers,
+#     tree2TaggedSentence,
+#     )
 from PorterStemmer import PorterStemmer
 # from sentenceArranger import sentenceArranger
-# from LanguageModels import StupidBackoffTrigramModel
 
 
 # To get a baseline translation, pass kw='baseline' to translate().
 
-def translate(filename, as_string=False, segment=False, kw='optimized'):
+def translate(filename, as_string=False, preprocess=False, kw='optimized'):
     '''Return a Chinese to English translation.'''
     # get a word-by-word translation
-    translation = baseline_translate(filename, segment, kw)
+    translation = baseline_translate(filename, preprocess, kw)
 
     if kw == 'optimized':
+
+        # for words that have several possible translations, select the best
+        # possible translation given its context (the previous and following
+        # words)
+        translation = select_best(translation)
 
         # position copulas before adverbs and delete copulas preceding
         # prepositions
@@ -33,24 +44,27 @@ def translate(filename, as_string=False, segment=False, kw='optimized'):
     return translation
 
 
-def baseline_translate(filename, segment, kw):
+def baseline_translate(filename, preprocess, kw):
     '''Return a primitive translation of a file from Chinese into English.
 
-    If 'as_string' is True, the translation is returned as a string. Otherwise,
-    the translation is returned as a list.
+    This function produces a word-by-word translation.
 
-    If 'segment' is True, the Stanford segmenter will be used to segment the
-    file. Therefore, if 'segment' is False, the file specified by filename
-    should already be segmented. Beware: the segmenter is a tad slow.
+    If 'preprocess' is True, the file's contents will be segmented (using the
+    Stanford segmenter), and parsed (using the Stanford parser), and
+    re-arranged to become more English-like.
+
+    Therefore, if 'preprocess' is False, the file specified by fileness should
+    already be segmented, parsed, and reordered. Beware: segmenting, parsing,
+    and reordering is a slow ordeal.
     '''
     punctuation = '，。、'
     punct_dict = {'，': ',', '、': ',', '。': '.'}
     translation = []
 
-    if segment:
-        # segment the file to be translated
-        segmented = _segment(filename)
-        text = segmented.splitlines(True)
+    if preprocess:
+        # segment, parse, and re-arrange the words to be translated
+        text = preprocess(filename)
+        text = text.splitlines(True)
 
     else:
         # open the file to be translated
@@ -95,14 +109,6 @@ def baseline_translate(filename, segment, kw):
     return translation
 
 
-def _segment(filename):
-    # segment the specified file using the Stanford segmenter
-    cmd = 'stanford-segmenter-2015-01-30/segment.sh ctb %s UTF-8 0' % filename
-    segmented = subprocess.check_output(cmd, shell=True)
-
-    return segmented
-
-
 def translate_as_string(list_translation):
     # convert a list translation into a string translation
     string_translation = [t[1] for t in list_translation]
@@ -125,12 +131,95 @@ def _prettify(text):
     return text
 
 
+# Pre-Processing --------------------------------------------------------------
+
+def preprocess(filename):
+    '''Segment, parse, and reorder the words in the specified file.'''
+    segmented = _segment(filename)
+    # parsed = _parse(segmented)
+    # reordered = _reorder(parsed)
+
+    # return reordered
+    return segmented
+
+
+def _segment(filename):
+    # segment the specified file using the Stanford segmenter
+    cmd = 'stanford-segmenter-2015-01-30/segment.sh ctb %s UTF-8 0' % filename
+    segmented = subprocess.check_output(cmd, shell=True)
+
+    return segmented
+
+
+# def _parse(segmented_text):
+#     # create temporary file containting segmented text
+#     with ('temp.txt', 'w') as f:
+#         f.write(segmented_text)
+
+#     cmd = '/stanford-parser-full-2015-01-30/lexparser-lang.sh Chinese 30 '
+#     cmd += 'chineseFactored.ser.gz parsed temp.txt'
+
+#     # parse the segmented text
+#     parsed = subprocess.check_output(cmd, shell=True)
+
+#     # delete the temporary file
+#     subprocess.call('rm tempt.txt', shell=True)
+
+#     return parsed
+
+
+# def _reorder(parsed_text):
+#     # reorder the sentences in the parsed file
+#     parsed_strings = [s for s in parsed_text.split('\n\n') if s != '']
+#     parsed_trees = [Tree.fromstring(s) for s in parsed_strings]
+
+#     reordered_trees = [reorder(ptr) for ptr in parsed_trees]
+#     sentences = [tree2TaggedSentence(ptr) for ptr in reordered_trees]
+
+#     substituted = [substituteNormalNumbers(s) for s in sentences]
+
+#     text = '\n'.join(substituted)
+
+#     return text
+
+
 # Post-Processing -------------------------------------------------------------
 
 porter = PorterStemmer()
+stupid = StupidBackoffTrigramLanguageModel()
 
 with open('EnglishWords.txt') as f:
     EnglishWords = f.read()
+
+
+def select_best(text):
+    '''Select the best translation of a word, given several possibilities.'''
+    for i, word in enumerate(text):
+
+        if '/' in word[1]:
+            words = word[1].split('/')
+
+            candidates = [
+                ('%s %s %s' % (
+                    text[i-1][1] if i != 0 else '',  # previous word
+                    w,
+                    text[i+1][1] if i != len(text) else ''  # next word
+                    ), w)
+                for w in words
+                ]
+
+        best = _best_candidate(candidates)
+
+        text[i][1] = best
+
+    return text
+
+
+def _best_candidate(candidates):
+    # assumes that candidates is a list of tuples of the form:
+    # ('previous-word target-word next-word', 'target-word')
+    # here, the target word for the highest scored trigram is returned
+    return max((stupid.score(c[0]), c[1]) for c in candidates)[1]
 
 
 def finesse_copulas(text):
@@ -184,23 +273,17 @@ def gerundize_verbs(text):
 
     return text
 
-
-# N-gram Playground -----------------------------------------------------------
-
 # TODO
-
 # 1. inflect nouns, e.g., plurality, case (n-grams) (N)
 # 2. select accurate determiners (n-grams) (N)
 # 3. inflect verbs, e.g., gerunds, infinitives (n-grams) (N)
 # 4. select best prepositions (n-grams) (N)
 
-# stupid = StupidBackoffTrigramModel()
-
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    # print '\n\033[4mList translation\033[0m:\n'
-    # print translate('parser/dev-reordered-30-stp.txt')
+    print '\n\033[4mList translation\033[0m:\n'
+    print translate('parser/dev-reordered-30-stp.txt')
     print '\n\033[4mString translation\033[0m:\n'
     print translate(
         'parser/dev-reordered-30-stp.txt',
