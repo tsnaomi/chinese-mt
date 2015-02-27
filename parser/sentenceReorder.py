@@ -30,6 +30,11 @@ def reorder(parsed_tree):
   if dec_inds:
     result = moveChildrenToFront(result, dec_inds)
 
+  # move LC to the front of the current phrase
+  lc_inds = indicesOfLC(result)
+  if lc_inds:
+    result = moveChildrenToFront(result, lc_inds)
+
   return Tree(parsed_tree.label(), [reorder(c) for c in result])
 
 
@@ -71,6 +76,21 @@ def isHeadedByDEC(parsed_tree):
   # return whether the tree is headed by DEC
 
   if indicesOfDEC(parsed_tree):
+    return True
+  else:
+    return False
+
+def indicesOfLC(parsed_tree):
+  # return a list containing the index of LC
+  # only look for the final position, so either [] or singleton
+  
+  return childrenIndicesByLabel(parsed_tree, "LC", 
+                                search_range=[len(parsed_tree)-1])
+
+def isHeadedByLC(parsed_tree):
+  # return whether the tree is headed by LC
+
+  if indicesOfLC(parsed_tree):
     return True
   else:
     return False

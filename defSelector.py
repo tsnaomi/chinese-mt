@@ -19,9 +19,11 @@ def defSelector(index, sentence, option="optimized"):
 		return getFirstDictEntry(word)
 
 	elif option == "optimized":
-		if tag == "NN" or tag == "NR" or tag == "NT": return chooseNoun(word, index, sentence)
+		if tag == "NN" or tag == "NR": return chooseNoun(word, index, sentence)
+		elif tag == "NT": return chooseTimeNoun(word, index, sentence)
 		elif tag == "M": return chooseMeasureWord(word, index, sentence)
-		elif tag == "VV" or tag == "VC" or tag == "VE": return chooseVerb(word, index, sentence)
+		elif tag == "VV" or tag == "VC": return chooseVerb(word, index, sentence)
+		elif tag == "VE": return chooseVE(word, index, sentence)
 		elif tag == "AD": return chooseAdverb(word, index, sentence)
 		elif tag == "P": return choosePreposition(word, index, sentence)
 		elif tag == "CC" or tag == "CS": return chooseConjunction(word, index, sentence) 
@@ -62,13 +64,17 @@ def choosePredAdjective(word, index, sentence):
 	base = chooseAttrAdjective(word, index, sentence)
 	if index < len(sentence) and getWord(sentence[index+1]) == "的":
 		return base
-	return "be " + base
+	base = base.split('/')
+	base = ["be " + word for word in base]
+	return '/'.join(base)
 
 def chooseAttrAdjective(word, index, sentence):
   # attributive adjectives; no copula before
 	base = getDictEntryByPrecedence(word, ['adj'])
 	if index < len(sentence) and getWord(sentence[index+1]) == "地":
-		return base + "ly"
+		base = base.split('/')
+		base = [word + "ly" for word in base]
+		return '/'.join(base)
 	return base 
 
 def chooseLocalizer(word, index, sentence):
@@ -82,6 +88,10 @@ def choosePreposition(word, index, sentence):
 
 def chooseNoun(word, index, sentence):
 	return getDictEntryByPrecedence(word, ['n', 'npl'])
+
+def chooseTimeNoun(word, index, sentence):
+	base = getDictEntryByPrecedence(word, ['n', 'npl'], result="first")
+	return "in "+base     #  +'/' + base +'/' + "on "+base+'/' + "at "+base+'/'
 
 def chooseMeasureWord(word, index, sentence):
 	return getDictEntryByPrecedence(word, ['measure word', 'n'])
@@ -99,24 +109,39 @@ def chooseVerb(word, index, sentence):
 
 	return verb, case
 
+def chooseVE(word, index, sentence):
+	verb = getDictEntryByPrecedence(word, ['v'])
+	if index == 0: case = "PROGRESSIVE"
+	elif verbInPrepPhrase(index, sentence): case = "INFINITIVE"
+	elif verbFollowingVerb(index, sentence): case = "INFINITIVE"
+	elif verbHasProgressiveModifier(index, sentence): case = "PROGRESSIVE"
+	elif verbHasPerfectiveModifier(index, sentence): case = "PERFECTIVE"
+	else: case = "PRESENT"
+
+	return "have/there be", case
+
+
+def adj2Adv(word):
+	if word[-1] == 'y': return word[:-1] + "ily" 
+	else: return word + "ly"
+
+def v2Adv(word):
+	return word + "ingly"
+
 def chooseAdverb(word, index, sentence):
 
 	bestOption = getFirstDictEntryofType(word, 'adv')
 	if bestOption != None: return bestOption
 
-	bestOption = getFirstDictEntryofType(word, 'adj')
+        
+	bestOption = getDictEntryByPrecedence(word, 'adj')
 	if bestOption != None: 
-		if bestOption[-1] == 'y': return bestOption[:-1] + "ily"
-#		elif bestOption == "good": return 'well'
-#		elif bestOption == "major": return "mainly"
-#		elif bestOption == "big": return "greatly" 
-		else: return bestOption + "ly"
+		return '/'.join([adj2Adv(word) for word in bestOption.split('/')])
+			
 
 	bestOption = getFirstDictEntryofType(word, 'v')
 	if bestOption != None:
-#		if bestOption == "look": return "seemingly"
-#		else: return bestOption + "ingly"
-		return bestOption + "ingly"
+		return '/'.join([v2Adv(word) for word in bestOption.split('/')])
 
 	return getFirstDictEntry(word)
 
