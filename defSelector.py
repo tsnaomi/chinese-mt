@@ -130,24 +130,24 @@ def v2Adv(word):
 
 def chooseAdverb(word, index, sentence):
 
-	bestOption = getFirstDictEntryofType(word, 'adv')
-	if bestOption != None: return bestOption
+	bestOption = getDictEntryByPrecedence(word, ['adv'], default=[])
+	if bestOption: return bestOption
 
         
-	bestOption = getDictEntryByPrecedence(word, 'adj')
-	if bestOption != None: 
-		return '/'.join([adj2Adv(word) for word in bestOption.split('/')])
+	bestOption = getDictEntryByPrecedence(word, ['adj'], default=[])
+	if bestOption: 
+		return '/'.join([adj2Adv(w) for w in bestOption.split('/')])
 			
 
-	bestOption = getFirstDictEntryofType(word, 'v')
-	if bestOption != None:
-		return '/'.join([v2Adv(word) for word in bestOption.split('/')])
+	bestOption = getDictEntryByPrecedence(word, ['v'], default=[])
+	if bestOption:
+		return '/'.join([v2Adv(w) for w in bestOption.split('/')])
 
 	return getFirstDictEntry(word)
 
 def complementizerDE(word, index, sentence):
 
-	return "THAT"
+	return "that" # /which/who
 
 def genitiveDE(word, index, sentence):
 	if index > 0 and getTag(sentence[index-1]) in ["VA", "JJ"]:
@@ -199,7 +199,7 @@ def isType(token, type):
 	if getTag(token) == type: return True
 	return False
 
-def getDictEntryByPrecedence(word, typelist, result="multiple"):
+def getDictEntryByPrecedence(word, typelist, result="multiple", default=None):
 	if result == "all":
 		return '/'.join(getAllDictEntries(word))
 	for t in typelist:
@@ -208,7 +208,9 @@ def getDictEntryByPrecedence(word, typelist, result="multiple"):
 			if result == "multiple": 
 				return '/'.join(bestOption)
 			else: return bestOption[0]
-	return getFirstDictEntry(word)
+	if default is None:
+		return getFirstDictEntry(word)
+	return default
 
 def getFirstDictEntryofType(word, type):
 	for entry in dictionary[word]:
