@@ -1,0 +1,137 @@
+(IP
+  (NP
+    (QP (CD ２００８))
+    (NP (NN 全球) (NN 经济))
+    (NP (NN 衰退)))
+  (VP (VV 导致)
+    (IP
+      (NP
+        (DNP
+          (NP
+            (DNP
+              (NP (NR 中国))
+              (DEG 的))
+            (ADJP (JJ 新))
+            (NP (NN 毕业生)))
+          (DEG 的))
+        (NP (NN 就业) (NN 市场)))
+      (VP
+        (ADVP (AD 显著))
+        (VP (VV 下降)))))
+  (PU 。))
+
+(IP
+  (NP
+    (CP
+      (IP
+        (VP
+          (NP (NT ２００９年))
+          (VP (VV 毕业))))
+      (DEC 的))
+    (NP (NN 学生)))
+  (VP
+    (ADVP (AD 将))
+    (VP
+      (VRD (VV 加入) (VV 到))
+      (IP
+        (NP (NT ２００８年))
+        (VP (VV 毕业)
+          (VP
+            (ADVP (AD 仍))
+            (VP (VV 在)
+              (LCP
+                (NP
+                  (CP
+                    (IP
+                      (VP (VV 找)
+                        (NP (NN 工作))))
+                    (DEC 的))
+                  (QP (CD ３００万))
+                  (NP (NN 学生)))
+                (LC 之中))))))))
+  (PU 。))
+
+(IP
+  (NP (NN 毕业生))
+  (VP (VV 过剩)
+    (NP
+      (CP
+        (IP
+          (VP
+            (ADVP (AD 也))
+            (VP (VV 可以)
+              (VP (VV 归因于)
+                (NP
+                  (NP
+                    (DNP
+                      (NP (NN 大学) (NN 入学率))
+                      (DEG 的))
+                    (NP (NN 提高)))
+                  (CC 和)
+                  (NP (NN 教育) (NN 机构)))))))
+        (DEC 的))
+      (NP (NN 增加))))
+  (PU 。))
+
+(IP
+  (CP
+    (ADVP (CS 虽然))
+    (IP
+      (NP
+        (DNP
+          (NP (NN 大学))
+          (DEG 的))
+        (NP (NN 学生) (NN 人数)))
+      (VP (VV 增加) (AS 了))))
+  (PU ，)
+  (ADVP (AD 但是))
+  (NP
+    (DNP
+      (NP (PN 他们))
+      (DEG 的))
+    (NP (NN 质量)))
+  (VP
+    (DVP
+      (VP
+        (ADVP (AD 并))
+        (ADVP (AD 没有))
+        (VP (VA 明显)))
+      (DEV 地))
+    (VP (VV 提高)))
+  (PU 。))
+
+(IP
+  (PP (P 在)
+    (LCP
+      (NP
+        (QP (CD 大多数))
+        (NP (NN 情况)))
+      (LC 下)))
+  (PU ，)
+  (NP (NN 毕业生))
+  (VP
+    (ADVP (AD 无法))
+    (PP (P 在)
+      (NP (NT ２００８年)))
+    (VP
+      (VP (VV 找到)
+        (NP
+          (DNP
+            (ADJP (JJ 合适))
+            (DEG 的))
+          (NP (NN 就业) (NN 机会))))
+      (VP (VC 是)
+        (PP (P 因为)
+          (IP
+            (NP (PN 他们))
+            (VP (VE 没有)
+              (NP
+                (CP
+                  (IP
+                    (NP (NN 行业))
+                    (VP (MSP 所)
+                      (VP (VV 需))))
+                  (DEC 的))
+                (NP (NN 技能)))))))))
+  (PU 。))
+
