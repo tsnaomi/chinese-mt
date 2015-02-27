@@ -5,15 +5,8 @@ import re
 import subprocess
 
 from defSelector import defSelector, getWord
-# from nltk.tree import Tree
 from ngram import StupidBackoffTrigramLanguageModel
-# from .parser.sentenceReorder import (
-#     reorder,
-#     substituteNormalNumbers,
-#     tree2TaggedSentence,
-#     )
 from PorterStemmer import PorterStemmer
-# from sentenceArranger import sentenceArranger
 
 
 # To get a baseline translation, pass kw='baseline' to translate().
@@ -24,22 +17,11 @@ def translate(filename, as_string=False, preprocess=False, kw='optimized'):
     translation = baseline_translate(filename, preprocess, kw)
 
     if kw == 'optimized':
-
-        # for words that have several possible translations, select the best
-        # possible translation given its context (the previous and following
-        # words)
-        translation = select_best(translation)
-
-        # position copulas before adverbs and delete copulas preceding
-        # prepositions
-        translation = finesse_copulas(translation)
-
-        # add gerunds to clause-initial verbs
-        translation = gerundize_verbs(translation)
+        translation = postprocess(translation)
 
     # if as_string is True, convert translation into a string
     if as_string:
-        translation = translate_as_string(translation)
+        translation = _translate_as_string(translation)
 
     return translation
 
@@ -75,10 +57,6 @@ def baseline_translate(filename, preprocess, kw):
         # split sentence into a list
         line = line.strip(' ').replace('\n', ' \n').split(' ')
 
-        # rearrange sentence to make it English-comprehensible
-        # change kw to 'baseline' to get a baseline translation
-        # line = sentenceArranger(line, kw)
-
         for i, word in enumerate(line):
 
             word = getWord(word)
@@ -97,31 +75,36 @@ def baseline_translate(filename, preprocess, kw):
                     # if the token is a verb, append the Chinese word, English
                     # verb, and the inflection
                     if isinstance(token, tuple):
-                        translation.append([word, token[0], token[1]])
-                        continue
+                        # translation.append([word, token[0], token[1]])
+                        # continue
+                        token = token[0]
 
                 except (KeyError, IndexError):
                     # append the token itself
                     token = word
 
-            translation.append([word, token])
+            if token:
+                translation.append(token)
 
     return translation
 
 
-def translate_as_string(list_translation):
+def _translate_as_string(list_translation):
     # convert a list translation into a string translation
-    string_translation = [t[1] for t in list_translation]
-    string_translation = ' '.join(string_translation)
+    string_translation = ' '.join(list_translation)
     string_translation = _prettify(string_translation)
+    string_translation = '.\n'.join(string_translation.split('. '))
 
     return string_translation
 
 
 def _prettify(text):
+    # affix possessive 's to previous word
+    text = text.replace(' \'s', '\'s').replace('s\'s', 's\'')
+
     # remove improper whitespacing around punctuation
     text = text.replace(' ,', ',').replace('  ', ' ').replace(' .', '.')
-    text = text.replace('\n ', '\n')
+    text = text.replace(' \'', '\'').replace('\n ', '\n')
 
     # capitalize the first letter of each sentence
     naughty_lowercase = [m.end(0) for m in re.finditer(r'^|\n', text)][:-1]
@@ -151,39 +134,53 @@ def _segment(filename):
     return segmented
 
 
-# def _parse(segmented_text):
-#     # create temporary file containting segmented text
-#     with ('temp.txt', 'w') as f:
-#         f.write(segmented_text)
+def _parse(segmented_text):
+    # create temporary file containting segmented text
+    with ('temp.txt', 'w') as f:
+        f.write(segmented_text)
 
-#     cmd = '/stanford-parser-full-2015-01-30/lexparser-lang.sh Chinese 30 '
-#     cmd += 'chineseFactored.ser.gz parsed temp.txt'
+    cmd = '/stanford-parser-full-2015-01-30/lexparser-lang.sh Chinese 30 '
+    cmd += 'chineseFactored.ser.gz parsed temp.txt'
 
-#     # parse the segmented text
-#     parsed = subprocess.check_output(cmd, shell=True)
+    # parse the segmented text
+    parsed = subprocess.check_output(cmd, shell=True)
 
-#     # delete the temporary file
-#     subprocess.call('rm tempt.txt', shell=True)
+    # delete the temporary file
+    subprocess.call('rm tempt.txt', shell=True)
 
-#     return parsed
+    return parsed
 
 
-# def _reorder(parsed_text):
-#     # reorder the sentences in the parsed file
-#     parsed_strings = [s for s in parsed_text.split('\n\n') if s != '']
-#     parsed_trees = [Tree.fromstring(s) for s in parsed_strings]
+def _reorder(parsed_text):
+    # from nltk.tree import Tree
+    # from .parser.sentenceReorder import (
+    #     reorder,
+    #     substituteNormalNumbers,
+    #     tree2TaggedSentence,
+    #     )
+    # from sentenceArranger import sentenceArranger
 
-#     reordered_trees = [reorder(ptr) for ptr in parsed_trees]
-#     sentences = [tree2TaggedSentence(ptr) for ptr in reordered_trees]
+    # # reorder the sentences in the parsed file
+    # parsed_strings = [s for s in parsed_text.split('\n\n') if s != '']
+    # parsed_trees = [Tree.fromstring(s) for s in parsed_strings]
 
-#     substituted = [substituteNormalNumbers(s) for s in sentences]
+    # reordered_trees = [reorder(ptr) for ptr in parsed_trees]
+    # sentences = [tree2TaggedSentence(ptr) for ptr in reordered_trees]
 
-#     text = '\n'.join(substituted)
+    # substituted = [substituteNormalNumbers(s) for s in sentences]
 
-#     return text
+    # text = '\n'.join(substituted)
+
+    # return text
+    pass
 
 
 # Post-Processing -------------------------------------------------------------
+
+
+# a wrapper around nltk.pos_tag, which only accepts a tokenized list of words
+tag = lambda w: nltk.pos_tag([w, ])[0][1]
+
 
 porter = PorterStemmer()
 stupid = StupidBackoffTrigramLanguageModel()
@@ -191,99 +188,232 @@ stupid = StupidBackoffTrigramLanguageModel()
 with open('EnglishWords.txt') as f:
     EnglishWords = f.read()
 
-
-def select_best(text):
-    '''Select the best translation of a word, given several possibilities.'''
-    for i, word in enumerate(text):
-
-        if '/' in word[1]:
-            words = word[1].split('/')
-
-            candidates = [
-                ('%s %s %s' % (
-                    text[i-1][1] if i != 0 else '',  # previous word
-                    w,
-                    text[i+1][1] if i != len(text) else ''  # next word
-                    ), w)
-                for w in words
-                ]
-
-        best = _best_candidate(candidates)
-
-        text[i][1] = best
-
-    return text
+from pattern.en import lexeme, superlative
 
 
-def _best_candidate(candidates):
+def postprocess(text):
+    '''Apply functions to a translation to achieve modest English fluency.'''
+    # refine word-by-word lookup
+    text = refine_lookup(text)
+
+    # Tokenized prettified string translation
+    pretty = _translate_as_string(text)
+    tokenized = nltk.word_tokenize(pretty)
+
+    # generate superlatives
+    translation = render_superlatives(tokenized)
+
+    # strip markers
+    translation = strip_markers(translation)
+
+    # position copulas before adverbs
+    translation = finesse_copulas(translation)
+
+    # change negative determiners into negation
+    translation = convert_negative(tokenized)
+
+    # deal with the "under the sun" idiom
+    translation = under_the_sun_idiom(translation)
+
+    for i in range(2):
+        # instert determiners
+        translation = insert_determiners(translation)
+
+        # inflect verbs
+        translation = inflect_verbs(translation)
+
+    return translation
+
+
+def select_best_candidate(candidates):
+    '''Using a stupid backoff trigram model, select the best candidate.'''
     # assumes that candidates is a list of tuples of the form:
     # ('previous-word target-word next-word', 'target-word')
     # here, the target word for the highest scored trigram is returned
-    return max((stupid.score(c[0]), c[1]) for c in candidates)[1]
+    scores = [(stupid.score(c[0].strip().split()), c[1]) for c in candidates]
+    return max(scores)[1]
+
+
+def refine_lookup(text):
+    '''Select the best translation of a word, given several possibilities.'''
+    for i, word in enumerate(text):
+
+        if '/' in word:
+            words = word.split('/')
+
+            previous = text[i-1] if i != 0 else ''
+            next_ = text[i+1] if i != len(text) else ''
+            candidates = [
+                ('%s %s %s' % (previous, w, next_), w)
+                for w in words
+                ]
+
+            best = select_best_candidate(candidates)
+            text[i][1] = best
+
+    return text
+
+
+def render_superlatives(text):
+    '''Conjugate English superlatives.'''
+    for i, word in enumerate(text):
+
+        if word == 'MOST' and i + 1 != len(text):
+            text[i] = 'the'
+            text[i+1] = superlative(text[i+1])
+
+    return text
+
+
+def strip_markers(text):
+    '''Strip grammatical markers, which appear in all caps upon lookup.'''
+    for i, word in enumerate(text):
+
+        # remove grammatical markers, e.g., THAT
+        # if word.isupper():
+        if word == 'THAT':  # salvage RMB
+            text[i] = ''
+
+    text = ' '.join(text).split()
+
+    return text
 
 
 def finesse_copulas(text):
-    '''Position copulas before ADVs and delete copulas that precede Ps.'''
-    # wrapper around nltk.pos_tag, which only accepts a tokenized list of words
-    tag = lambda w: nltk.pos_tag([w, ])[0][1]
+    '''Position copulas before ADVs.'''
+    tagged = nltk.pos_tag(text)
 
     for i, word in enumerate(text):
 
-        if word[1] == 'be':
+        if word == 'be':
+
+            # remove marker-like copulas, which taggers interpret as nouns
+            if tagged[i][1].startswith('N'):
+                text[i] = ''
 
             # move copulas before adverbs
-            if i != 0 and tag(text[i-1][1]) == 'RB':
+            elif i != 0 and tag(text[i-1]) == 'RB':
 
                 prev = i - 1
-                while i > 0 and tag(text[prev][1]) == 'RB':
+                while i > 0 and tagged[prev][1] == 'RB':
                     prev -= 1
 
-                text.pop(i)
-                text.insert(prev + 1, word)
+                text[i] = ''
+                text[prev + 1] = 'be ' + text[prev + 1]
 
             # remove copulas preceding prepositional phrases
             # 'IN' is the tag for prepositions
-            elif len(text) >= i + 1 and tag(text[i+1][1]) == 'IN':
-                text.pop(i)
+            # elif i + 1 <= len(text) and tagged[i+1][1] == 'IN':
+            #     text[i] = ''
 
     return text
 
 
-def gerundize_verbs(text):
-    '''Have sentence-initial verbs take gerunds.'''
-    # wrapper around nltk.pos_tag, which only accepts a tokenized list of words
-    tag = lambda w: nltk.pos_tag([w, ])[0][1]
+def convert_negative(text):
+    '''Convert 'no' determiners into the negative 'not'.'''
+    tagged = nltk.pos_tag(text)
 
     for i, word in enumerate(text):
 
-        # if the word is clause-initial...
-        if i == 0 or text[i-1][1] == '\n' or text[i-1][1] == ',':
+        if word == 'no' and tagged[i][1] == 'DT':
+            candidates = [
+                ('no %s' % text[i+1], word),
+                ('not %s' % text[i+1], 'not'),
+                ]
 
-            # # if the word is a verb...
-            if tag(word[1]).startswith(('V', 'NN')):  # REFINE
-                stemmed = porter.stem(word[1])
-                gerundive1 = stemmed + 'ing'
-                gerundive2 = stemmed + stemmed[-1] + 'ing'
-
-                if gerundive1 in EnglishWords:
-                    text[i][1] = gerundive1
-
-                elif gerundive2 in EnglishWords:
-                    text[i][1] = gerundive2
+            best = select_best_candidate(candidates)
+            text[i] = best
 
     return text
 
-# TODO
-# 1. inflect nouns, e.g., plurality, case (n-grams) (N)
-# 2. select accurate determiners (n-grams) (N)
-# 3. inflect verbs, e.g., gerunds, infinitives (n-grams) (N)
-# 4. select best prepositions (n-grams) (N)
+
+def under_the_sun_idiom(text):
+    '''Move adjunctal 'under the sun' idiom to the end of the clause.'''
+    for i, word in enumerate(text):
+
+        if word == 'under' and text[i+1] == 'the' and text[i+2] == 'sun':
+            text[i], text[i+1], text[i+2] = '', '', ''
+
+            index = i + 3
+            while index + 1 != len(text) and text[index] not in '.,':
+                index += 1
+
+            text[index] = 'under the sun%s' % text[index]
+
+    text = ' '.join(text).split()
+
+    return text
+
+
+def insert_determiners(text):
+    '''Insert determiners'''
+    tagged = nltk.pos_tag(text)
+
+    for i, word in enumerate(text):
+        tag = tagged[i][1]
+        modifiers = ('RB', 'JJ', 'CD', 'DT', 'POS', 'NN')
+
+        if tag.startswith(modifiers):
+
+            if i != 0 and tagged[i-1][1].startswith(modifiers):
+                continue
+
+            else:
+                previous = text[i-1] if i != 0 else ''
+                next_ = text[i+1] if i + 1 != len(text) else ''
+                candidates = [
+                    ('%s %s %s' % (previous, word, next_), ''),
+                    ('%s the %s %s' % (previous, word, next_), 'the '),
+                    ('%s a %s %s' % (previous, word, next_), 'a '),
+                    ]
+
+                best = select_best_candidate(candidates)
+                text[i] = best + word
+
+    text = ' '.join(text).split()
+
+    return text
+
+
+def inflect_verbs(text):
+    '''Inflect verbs.'''
+    tagged = nltk.pos_tag(text)
+
+    for i, word in enumerate(text):
+
+        if tagged[i][1].startswith('V'):
+            inflections = lexeme(word)
+            candidates = []
+
+            for v in inflections:
+                previous1 = text[i-2] if i > 1 else ''
+                previous2 = text[i-2] if i > 1 else ''
+                next_ = text[i+1] if i + 1 != len(text) else ''
+                cand1 = ('%s %s %s %s' % (
+                    previous1,
+                    previous2,
+                    v,
+                    next_), v)
+                cand2 = ('%s %s to %s %s' % (  # attempt at the infinitive
+                    previous1,
+                    previous2,
+                    v,
+                    next_), v)
+                candidates.extend([cand1, cand2])
+
+            best = select_best_candidate(candidates)
+            text[i] = best
+
+    text = ' '.join(text).split()
+
+    return text
+
 
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    print '\n\033[4mList translation\033[0m:\n'
-    print translate('parser/dev-reordered-30-stp.txt')
+    print '\n\033[4mTagged translation\033[0m:\n'
+    print nltk.pos_tag(translate('parser/dev-reordered-30-stp.txt'))
     print '\n\033[4mString translation\033[0m:\n'
     print translate(
         'parser/dev-reordered-30-stp.txt',
