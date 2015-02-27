@@ -16,16 +16,28 @@ def reorder(parsed_tree):
     return result
 
   # all the reordering happens below
-  # if condition: result = some_reordered_tree
+  # general schema 
+  # if condition: result = some_reorder_strategy(result, ...)
+
+  # move CP headed by DEC to the back of the current phrase
+  cp_inds = indicesOfCP(result)
+  decp_inds = [i for i in cp_inds if isHeadedByDEC(result[i])]
+
+  result = moveChildrenToBack(result, decp_inds)
+
+  # move DEC to the front of the current phrase
+  dec_inds = indicesOfDEC(result)
+  if dec_inds:
+    result = moveChildrenToFront(result, dec_inds)
 
   return Tree(parsed_tree.label(), [reorder(c) for c in result])
 
 
 
-def GetChildIndex(parsed_tree, label, search_range=None):
+def childrenIndicesByLabel(parsed_tree, label, search_range=None):
   """ return a list of indices of the children with the designated label
       can optionally restrict the search range
-      e.g., search_range = [-1] means only look at the last child
+      NOTE: indices must be positive! So use [len(ls)-1] instead of [-1]
   """
   # words
   if not isinstance(parsed_tree, Tree):
@@ -43,25 +55,51 @@ def GetChildIndex(parsed_tree, label, search_range=None):
               if parsed_tree[i].label() == label]
 
 
-def lastChild(parsed_tree):
-  if isinstance(parsed_tree, Tree):
-    return parsed_tree[len(parsed_tree) - 1]
+def indicesOfCP(parsed_tree):
+  # return a list containing all the CP indices
+  
+  return childrenIndicesByLabel(parsed_tree, "CP")
 
-def moveChildToFront(parsed_tree, child_label):
-  """ return a tree where the child_label node is moved to the front
+def indicesOfDEC(parsed_tree):
+  # return a list containing the index of DEC
+  # only look for the final position, so either [] or singleton
+  
+  return childrenIndicesByLabel(parsed_tree, "DEC", 
+                                search_range=[len(parsed_tree)-1])
+
+def isHeadedByDEC(parsed_tree):
+  # return whether the tree is headed by DEC
+
+  if indicesOfDEC(parsed_tree):
+    return True
+  else:
+    return False
+
+
+
+def moveChildrenToFront(parsed_tree, indices):
+  """ return a tree where the nodes with the indices are moved to the front
   """
   if isinstance(parsed_tree, Tree):
-    front = [c for c in parsed_tree if c.label() == child_label]
-    rest = [c for c in parsed_tree if c.label() != child_label]
+    front = [parsed_tree[i] for i in range(len(parsed_tree))
+                            if i in indices]
+    rest = [parsed_tree[i] for i in range(len(parsed_tree))
+                            if i not in indices]
     return Tree(parsed_tree.label(), front + rest)
 
-def moveChildToBack(parsed_tree, child_label):
-  """ return a tree where the child_label node is moved to the back
+def moveChildrenToBack(parsed_tree, indices):
+  """ return a tree where the nodes with the indices are moved to the front
   """
   if isinstance(parsed_tree, Tree):
-    back = [c for c in parsed_tree if c.label() == child_label]
-    rest = [c for c in parsed_tree if c.label() != child_label]
+    back = [parsed_tree[i] for i in range(len(parsed_tree))
+                            if i in indices]
+    rest = [parsed_tree[i] for i in range(len(parsed_tree))
+                            if i not in indices]
     return Tree(parsed_tree.label(), rest + back)
+
+
+
+
 
 # produce tagged sentences
 def tree2TaggedSentence(ptr):
