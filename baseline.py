@@ -16,12 +16,12 @@ tag = lambda w: nltk.pos_tag([w, ])[0][1]
 # To get a baseline translation, pass kw='baseline' to translate().
 
 def translate(filename='parser/dev-reordered-30-stp.txt', as_string=False,
-              preprocess=False, postprocess=True, kw='optimized'):
+              pre=False, post=True, kw='optimized'):
     '''Return a Chinese to English translation.'''
     # get a word-by-word translation
-    translation = baseline_translate(filename, preprocess, kw)
+    translation = baseline_translate(filename, pre, kw)
 
-    if postprocess:
+    if post:
         # apply post-processing strategies
         translation = postprocess(translation)
 
@@ -438,7 +438,7 @@ if __name__ == '__main__':
 
     # string translation without post-processing
     print '\n\033[4mString translation (no post-processing)\033[0m:\n'
-    translation2 = translate(as_string=True, postprocess=False)
+    translation2 = translate(as_string=True, post=False)
     print translation2
 
     # # parsed translation
