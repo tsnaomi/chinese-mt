@@ -249,7 +249,7 @@ def refine_lookup(text):
                 ]
 
             best = select_best_candidate(candidates)
-            text[i][1] = best
+            text[i] = best
 
     return text
 
