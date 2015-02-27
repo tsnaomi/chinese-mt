@@ -15,12 +15,14 @@ tag = lambda w: nltk.pos_tag([w, ])[0][1]
 
 # To get a baseline translation, pass kw='baseline' to translate().
 
-def translate(filename, as_string=False, preprocess=False, kw='optimized', comparison=True):
+def translate(filename='parser/dev-reordered-30-stp.txt', as_string=False,
+              preprocess=False, postprocess=True, kw='optimized'):
     '''Return a Chinese to English translation.'''
     # get a word-by-word translation
     translation = baseline_translate(filename, preprocess, kw)
 
-    if kw == 'optimized' and comparison:
+    if postprocess:
+        # apply post-processing strategies
         translation = postprocess(translation)
 
     # if as_string is True, convert translation into a string
@@ -425,11 +427,19 @@ def inflect_verbs(text):
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
+    # # tagged tranlsation
     # print '\n\033[4mTagged translation\033[0m:\n'
     # print nltk.pos_tag(translate('parser/dev-reordered-30-stp.txt'))
-    print '\n\033[4mString translation\033[0m:\n'
-    translation1 = translate('parser/dev-reordered-30-stp.txt', as_string=True)
-    print translation1
-    translation2 = translate('parser/dev-reordered-30-stp.txt', as_string=True, comparison=False)
+
+    # string translation with post-processing
+    print '\n\033[4mString translation (with post-processing)\033[0m:\n'
+    translation = translate(as_string=True)
+    print translation
+
+    # string translation without post-processing
+    print '\n\033[4mString translation (no post-processing)\033[0m:\n'
+    translation2 = translate(as_string=True, postprocess=False)
     print translation2
+
+    # # parsed translation
     # print parse(translation)
