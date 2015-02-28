@@ -6,8 +6,7 @@ import subprocess
 
 from defSelector import defSelector, getWord
 from ngram import StupidBackoffTrigramLanguageModel
-from pattern.en import lexeme, parse, referenced, superlative
-from pprint import pprint
+from pattern.en import conjugate, lexeme, referenced, superlative
 from PorterStemmer import PorterStemmer
 
 
@@ -30,7 +29,7 @@ def translate(
 
     # if as_string is True, convert translation into a string
     if as_string:
-        translation = _translate_as_string(translation, prettify=False)
+        translation = _translate_as_string(translation)
 
     return translation
 
@@ -112,18 +111,17 @@ def _translate_as_string(list_translation, prettify=True):
 
 def _prettify(text):
     # remove sentence-onset tags
-    text = text.replace('<S>', '')
+    text = text.replace('<S> ', '')
 
     # affix possessive 's to previous word
     text = text.replace(' \'s', '\'s').replace('s\'s', 's\'')
 
     # remove improper whitespacing around punctuation
     text = text.replace(' ,', ',').replace('  ', ' ').replace(' .', '.')
-    text = text.replace(' \'', '\'').replace('\n ', '\n')
 
     # capitalize the first letter of each sentence
-    naughty_lowercase = [m.end(0) for m in re.finditer(r'^|\n', text)][:-1]
-    for i in naughty_lowercase:
+    lowercase = [m.end(0) for m in re.finditer(r'^|\. ', text)]
+    for i in lowercase:
         text = text[:i] + text[i].upper() + text[i+1:]
 
     return text
@@ -422,11 +420,20 @@ def inflect_verbs(text):
             candidates = []
 
             for v in inflections:
+                inf = conjugate(v, tense='INFINITIVE')
                 prev1 = text[i-2] if i > 1 else ''
                 prev2 = text[i-1] if i > 1 else ''
                 next_ = text[i+1] if i + 1 != len(text) else ''
                 c = ('%s %s %s %s' % (prev1, prev2, v, next_), v)
                 candidates.append(c)
+
+            # attempt to capture infinitives
+            inf = conjugate(v, tense='INFINITIVE')
+            to = (
+                '%s %s to %s %s' % (prev1, prev2, inf, next_),
+                'to %s' % inf
+                )
+            candidates.append(to)
 
             best = select_best_candidate(candidates)
             text[i] = best
@@ -479,19 +486,22 @@ if __name__ == '__main__':
 
     execute_reordering()
 
-    # tagged tranlsation
-    print '\n\033[4mTagged translation\033[0m:\n'
-    print nltk.pos_tag(translate('parser/dev-reordered-30-stp.txt'))
+    # # tagged tranlsation
+    # print '\n\033[4mTagged translation\033[0m:\n'
+    # print nltk.pos_tag(translate('parser/dev-reordered-30-stp.txt'))
 
     # string translation with post-processing
     print '\n\033[4mString translation (with post-processing)\033[0m:\n'
     translation = translate(as_string=True)
     print '\n', translation
 
+    # # parsed translation
+    # print '\n\033[4mParsed translation\033[0m:\n'
+    # from pattern.en import parse
+    # print '\n', parse(translation, relations=True)
+
     # # string translation without post-processing
     # print '\n\033[4mString translation (no post-processing)\033[0m:\n'
-    # translation2 = translate(as_string=True, post=False).replace('\n\n', '\n')
+    # translation2 = translate(as_string=True, post=False)
+    # translation2 = translation2.replace('\n\n', '\n')
     # print translation2
-
-    # # parsed translation
-    # print parse(translation)
