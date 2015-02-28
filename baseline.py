@@ -12,16 +12,10 @@ from PorterStemmer import PorterStemmer
 
 # To get a baseline translation, pass kw='baseline' to translate().
 
-def translate(
-        filename='parser/dev-reordered-30-stp.txt',
-        as_string=False,
-        pre=False,
-        post=True,
-        kw='optimized',
-        ):
+def translate(filename, as_string=False, post=True, kw='optimized'):
     '''Return a Chinese to English translation.'''
     # get a word-by-word translation
-    translation = baseline_translate(filename, pre, kw)
+    translation = baseline_translate(filename, kw)
 
     if post:
         # apply post-processing strategies
@@ -34,32 +28,18 @@ def translate(
     return translation
 
 
-def baseline_translate(filename, preprocess, kw):
+def baseline_translate(filename, kw):
     '''Return a primitive translation of a file from Chinese into English.
 
     This function produces a word-by-word translation.
-
-    If 'preprocess' is True, the file's contents will be segmented (using the
-    Stanford segmenter), and parsed (using the Stanford parser), and
-    re-arranged to become more English-like.
-
-    Therefore, if 'preprocess' is False, the file specified by fileness should
-    already be segmented, parsed, and reordered. Beware: segmenting, parsing,
-    and reordering is a slow ordeal.
     '''
     punctuation = '，。、'
     punct_dict = {'，': ',', '、': ',', '。': '.'}
     translation = []
 
-    if preprocess:
-        # segment, parse, and re-arrange the words to be translated
-        text = preprocess(filename)
-        text = text.splitlines(True)
-
-    else:
-        # open the file to be translated
-        with open(filename, 'r') as f:
-            text = f.readlines()
+    # open the file to be translated
+    with open(filename, 'r') as f:
+        text = f.readlines()
 
     for line in text:
         # split sentence into a list
@@ -83,8 +63,6 @@ def baseline_translate(filename, preprocess, kw):
                     # if the token is a verb, append the Chinese word, English
                     # verb, and the inflection
                     if isinstance(token, tuple):
-                        # translation.append([word, token[0], token[1]])
-                        # continue
                         token = token[0]
 
                 except (KeyError, IndexError):
@@ -127,69 +105,7 @@ def _prettify(text):
     return text
 
 
-# Pre-Processing --------------------------------------------------------------
-
-def preprocess(filename):
-    '''Segment, parse, and reorder the words in the specified file.'''
-    segmented = _segment(filename)
-    # parsed = _parse(segmented)
-    # reordered = _reorder(parsed)
-
-    # return reordered
-    return segmented
-
-
-def _segment(filename):
-    # segment the specified file using the Stanford segmenter
-    cmd = 'stanford-segmenter-2015-01-30/segment.sh ctb %s UTF-8 0' % filename
-    segmented = subprocess.check_output(cmd, shell=True)
-
-    return segmented
-
-
-def _parse(segmented_text):
-    # create temporary file containting segmented text
-    with ('temp.txt', 'w') as f:
-        f.write(segmented_text)
-
-    cmd = '/stanford-parser-full-2015-01-30/lexparser-lang.sh Chinese 30 '
-    cmd += 'chineseFactored.ser.gz parsed temp.txt'
-
-    # parse the segmented text
-    parsed = subprocess.check_output(cmd, shell=True)
-
-    # delete the temporary file
-    subprocess.call('rm tempt.txt', shell=True)
-
-    return parsed
-
-
-def _reorder(parsed_text):   # TODO
-    # from nltk.tree import Tree
-    # from .parser.sentenceReorder import (
-    #     reorder,
-    #     substituteNormalNumbers,
-    #     tree2TaggedSentence,
-    #     )
-    # from sentenceArranger import sentenceArranger
-
-    # # reorder the sentences in the parsed file
-    # parsed_strings = [s for s in parsed_text.split('\n\n') if s != '']
-    # parsed_trees = [Tree.fromstring(s) for s in parsed_strings]
-
-    # reordered_trees = [reorder(ptr) for ptr in parsed_trees]
-    # sentences = [tree2TaggedSentence(ptr) for ptr in reordered_trees]
-
-    # substituted = [substituteNormalNumbers(s) for s in sentences]
-
-    # text = '\n'.join(substituted)
-
-    # return text
-    pass
-
-
 # Post-Processing -------------------------------------------------------------
-
 
 porter = PorterStemmer()
 stupid = StupidBackoffTrigramLanguageModel()
@@ -486,22 +402,24 @@ if __name__ == '__main__':
 
     execute_reordering()
 
+    FILENAME = 'parser/dev-reordered-30-stp.txt'
+
     # # tagged tranlsation
     # print '\n\033[4mTagged translation\033[0m:\n'
-    # print nltk.pos_tag(translate('parser/dev-reordered-30-stp.txt'))
+    # print nltk.pos_tag(translate(FILENAME))
 
     # string translation with post-processing
     print '\n\033[4mString translation (with post-processing)\033[0m:\n'
-    translation = translate(as_string=True)
+    translation = translate(FILENAME, as_string=True)
     print '\n', translation
 
-    # # parsed translation
-    # print '\n\033[4mParsed translation\033[0m:\n'
-    # from pattern.en import parse
-    # print '\n', parse(translation, relations=True)
+    # parsed translation
+    print '\n\033[4mParsed translation\033[0m:\n'
+    from pattern.en import parse
+    print '\n', parse(translation, relations=True)
 
     # # string translation without post-processing
     # print '\n\033[4mString translation (no post-processing)\033[0m:\n'
-    # translation2 = translate(as_string=True, post=False)
+    # translation2 = translate(FILENAME, as_string=True, post=False)
     # translation2 = translation2.replace('\n\n', '\n')
     # print translation2
