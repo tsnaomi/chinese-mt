@@ -7,7 +7,6 @@ import subprocess
 from defSelector import defSelector, getWord
 from ngram import StupidBackoffTrigramLanguageModel
 from pattern.en import conjugate, lexeme, referenced, superlative
-from PorterStemmer import PorterStemmer
 
 
 # To get a baseline translation, pass kw='baseline' to translate().
@@ -107,11 +106,7 @@ def _prettify(text):
 
 # Post-Processing -------------------------------------------------------------
 
-porter = PorterStemmer()
 stupid = StupidBackoffTrigramLanguageModel()
-
-with open('EnglishWords.txt') as f:
-    EnglishWords = f.read()
 
 
 def postprocess(text):
@@ -137,11 +132,16 @@ def postprocess(text):
     # position copulas before adverbs
     translation = finesse_copulas(translation)
 
-    # inflect verbs
-    translation = inflect_verbs(translation)
+    equilibrium = None
 
-    # instert determiners
-    translation = insert_determiners(translation)  # TODO
+    while equilibrium != translation:
+        equilibrium = translation
+
+        # inflect verbs
+        translation = inflect_verbs(translation)
+
+        # instert determiners
+        translation = insert_determiners(translation)
 
     return translation
 
@@ -174,7 +174,7 @@ def select_best_candidate(candidates):
     candidates = [(c[0].replace('  ', ' ').strip(), c[1]) for c in candidates]
     scores = [(stupid.score(c[0].split()), c[0], c[1]) for c in candidates]
     best = max(scores)
-    # print scores, '\n', best, '\n'
+    # print scores, '\n', 'winner: ', best, '\n'
     return best[2]
 
 
@@ -281,7 +281,7 @@ def under_the_sun_idiom(text):
             while index + 1 != len(text) and text[index] not in '.,':
                 index += 1
 
-            text[index] = 'under the sun%s' % text[index]
+            text[index] = 'under the sun %s' % text[index]
 
     text = ' '.join(text).split()
 
@@ -385,7 +385,7 @@ def insert_determiners(text):
                 ]
 
             best = select_best_candidate(candidates)
-            text[i] = best + word
+            text[i] = '%s %s' % (best, word)
 
     text = ' '.join(text).split()
 
@@ -413,10 +413,10 @@ if __name__ == '__main__':
     translation = translate(FILENAME, as_string=True)
     print '\n', translation
 
-    # parsed translation
-    print '\n\033[4mParsed translation\033[0m:\n'
-    from pattern.en import parse
-    print '\n', parse(translation, relations=True)
+    # # parsed translation
+    # print '\n\033[4mParsed translation\033[0m:\n'
+    # from pattern.en import parse
+    # print '\n', parse(translation, relations=True)
 
     # # string translation without post-processing
     # print '\n\033[4mString translation (no post-processing)\033[0m:\n'

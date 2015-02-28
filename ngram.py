@@ -1,35 +1,25 @@
 import math
 import nltk
 
+from _ngrams import unigrams, bigrams, trigrams, total
+
 
 CORPUS = nltk.corpus.brown.sents(categories=nltk.corpus.brown.categories())
 
 
-class StupidBackoffTrigramLanguageModel:
+class Train:
 
-    def __init__(self, corpus=CORPUS[:1000]):
-        try:
-            from _ngrams import unigrams, bigrams, trigrams, total
-            self.unigrams = unigrams
-            self.bigrams = bigrams
-            self.trigrams = trigrams
-            self.total = total
-
-        except ImportError:
-            self.unigrams = {'UNK': 0, }
-            self.bigrams = {('UNK', 'UNK'): 0, }
-            self.trigrams = {('UNK', 'UNK', 'UNK'): 0, }
-            self.total = 0
-            self.train(corpus)
+    def __init__(self, corpus=CORPUS):
+        self.unigrams = {'UNK': 0, }
+        self.bigrams = {('UNK', 'UNK'): 0, }
+        self.trigrams = {('UNK', 'UNK', 'UNK'): 0, }
+        self.total = 0
+        self.train(corpus)
+        self.dump()
 
     def train(self, corpus):
         '''Train a stupid backoff language model using trigrams.'''
-        try:
-            from _ngrams import unigrams, bigrams, trigrams, total
-            return unigrams, bigrams, trigrams, total
-
-        except ImportError:
-            pass
+        print 'Training takes forever.'
 
         for sent in corpus:
 
@@ -61,6 +51,48 @@ class StupidBackoffTrigramLanguageModel:
                     trigram = (sentence[i-2], sentence[i-1], word)
                     self.trigrams.setdefault(trigram, 0)
                     self.trigrams[trigram] += 1
+
+    def dump(self):
+        '''Dump ngram data into file.'''
+        with open('__ngrams.py', 'w') as f:
+
+            print 'Writing unigrams to file...'
+            unigrams_ = 'unigrams = {\n'
+            for k, v in self.unigrams.iteritems():
+                unigrams_ += '    "%s": %s,\n' % (k, v)
+            unigrams_ += '    }\n\n'
+            f.write(unigrams_)
+
+            print 'Writing bigrams to file...'
+            bigrams_ = 'bigrams = {\n'
+            for k, v in self.bigrams.iteritems():
+                bigrams_ += '    ("%s", "%s"): %s,\n' % (k[0], k[1], v)
+            bigrams_ += '    }\n\n'
+            f.write(bigrams_)
+
+            print 'Writing trigrams to file...'
+            trigrams_ = 'trigrams = {\n'
+            for k, v in self.trigrams.iteritems():
+                if len(k) == 3:
+                    trigrams_ += '    ("%s", "%s", "%s"): %s,\n' % \
+                        (k[0], k[1], k[2], v)
+                else:
+                    trigrams_ += '    ("%s", "%s"): %s,\n' % (k[0], k[1], v)
+            trigrams_ += '    }\n\n'
+            f.write(trigrams_)
+
+            print 'writing total to file...'
+            total_ = 'total = %s' % self.total
+            f.write(total_)
+
+
+class StupidBackoffTrigramLanguageModel:
+
+    def __init__(self, corpus=CORPUS[:1000]):
+        self.unigrams = unigrams
+        self.bigrams = bigrams
+        self.trigrams = trigrams
+        self.total = total
 
     def score(self, sequence):
         '''Given a list of words, return a log-probability of the sequence.'''
@@ -100,7 +132,7 @@ class StupidBackoffTrigramLanguageModel:
         return score
 
 if __name__ == '__main__':
-    m3 = StupidBackoffTrigramLanguageModel()
+    m = StupidBackoffTrigramLanguageModel()
 
     candidates = [
         # 'China was under the sun',
@@ -141,4 +173,4 @@ if __name__ == '__main__':
         ]
 
     for t in candidates:
-        print '\t%s: %s' % (t, m3.score(t.split()))
+        print '\t%s: %s' % (t, m.score(t.split()))

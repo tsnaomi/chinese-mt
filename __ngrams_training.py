@@ -64,7 +64,6 @@ class Train:
                 bigrams += '    ("%s", "%s"): %s,\n' % (k[0], k[1], v)
             bigrams += '    }\n\n'
             f.write(bigrams)
-            print 'bigrams'
 
             print 'writing trigrams to file...'
             trigrams = 'trigrams = {\n'
@@ -76,15 +75,13 @@ class Train:
                     trigrams += '    ("%s", "%s"): %s,\n' % (k[0], k[1], v)
             trigrams += '    }\n\n'
             f.write(trigrams)
-            print 'trigrams'
 
             print 'writing total to file...'
             total = 'total = %s' % self.total
             f.write(total)
-            print 'total'
 
 
 if __name__ == '__main__':
     print 'Training takes forever.'
     # this takes a few hours, uncomment at your own rish
-    Train()
+    # Train()
