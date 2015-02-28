@@ -317,8 +317,6 @@ def genitive_alternation(text):
                 ('%s of %s' % (noun2, noun1), 'GEN'),
                 ]
 
-            print candidates
-
             best = select_best_candidate(candidates)
 
             if best == 'GEN':
@@ -456,10 +454,11 @@ def insert_determiners(text):
 
             previous = text[i-1] if i != 0 else ''
             next_ = text[i+1] if i + 1 != len(text) else ''
+            a = referenced(word).split()[0]  # indefinite article
             candidates = [
                 ('%s %s %s' % (previous, word, next_), ''),
-                ('%s the %s %s' % (previous, word, next_), 'the '),  #
-                ('%s a %s %s' % (previous, word, next_), 'a '),  #
+                ('%s the %s %s' % (previous, word, next_), 'the '),
+                ('%s %s %s %s' % (previous, a, word, next_), a),
                 ]
 
             best = select_best_candidate(candidates)
