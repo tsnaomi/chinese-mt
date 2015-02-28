@@ -10,9 +10,6 @@ from pattern.en import lexeme, parse, referenced, superlative
 from pprint import pprint
 from PorterStemmer import PorterStemmer
 
-# a wrapper around nltk.pos_tag, which only accepts a tokenized list of words
-tag = lambda w: nltk.pos_tag([w, ])[0][1]
-
 
 # To get a baseline translation, pass kw='baseline' to translate().
 
@@ -211,6 +208,9 @@ def postprocess(text):
     # tokenize prettified string translation
     translation = _format_as_string(text)
 
+    # apply genitive alternation
+    translation = genitive_alternation(translation)
+
     # generate superlatives
     translation = render_superlatives(translation)
 
@@ -246,8 +246,6 @@ def _format_as_string(text):
         if i == 0 or tokenized[i-1] == '.':
             tokenized[i] = '<S> ' + tokenized[i]
 
-    import pdb; pdb.set_trace()
-
     # render sentence-onset tags their own token
     tokenized = ' '.join(tokenized).split(' ')
 
@@ -262,7 +260,7 @@ def select_best_candidate(candidates):
     candidates = [(c[0].replace('  ', ' ').strip(), c[1]) for c in candidates]
     scores = [(stupid.score(c[0].split()), c[0], c[1]) for c in candidates]
     best = max(scores)
-    # print scores, best, '\n'
+    # print scores, '\n', best, '\n'
     return best[2]
 
 
@@ -299,6 +297,38 @@ def refine_lookup(text):
     return text
 
 
+def genitive_alternation(text):
+    '''Apply the genitive for if it scores better than the posessive.
+
+    The genitive alternation is the alternation between phrases of the
+    'noun2 of noun1' and those of the form 'noun1 's noun2'.
+    '''
+    tagged = nltk.pos_tag(text)
+    nouns = ('N', 'J')
+
+    for i, word in enumerate(text):
+
+        if word == '\'s' and tagged[i-1][1].startswith(nouns) and \
+                tagged[i+1][1].startswith(nouns):
+            noun1 = text[i-1]
+            noun2 = text[i+1]
+            candidates = [
+                ('%s \'s %s' % (noun1, noun2), 'POS'),
+                ('%s of %s' % (noun2, noun1), 'GEN'),
+                ]
+
+            print candidates
+
+            best = select_best_candidate(candidates)
+
+            if best == 'GEN':
+                text[i-1] = noun2
+                text[i] = 'of'
+                text[i+1] = noun1
+
+    return text
+
+
 def render_superlatives(text):
     '''Conjugate English superlatives.'''
     for i, word in enumerate(text):
@@ -310,13 +340,8 @@ def render_superlatives(text):
     return text
 
 
-def genitive_alternation(text):  # TODO
-    pass
-
-
 def convert_negative(text):
     '''Convert 'no' determiners into the negative 'not'.'''
-
     tagged = nltk.pos_tag(text)
 
     for i, word in enumerate(text):
@@ -416,33 +441,29 @@ def inflect_verbs(text):
 def insert_determiners(text):
     '''Insert determiners'''
     tagged = nltk.pos_tag(text)
+    modifiers = ('RB', 'JJ', 'CD', 'DT', 'POS', 'NN')
 
     for i, word in enumerate(text):
         tag = tagged[i][1]
-        modifiers = ('RB', 'JJ', 'CD', 'DT', 'POS', 'NN')
 
         if tag.startswith(modifiers):
 
             if i == 0 or tagged[i-1][1].startswith(modifiers):
                 continue
 
-            elif i + 1 != len(text) and tagged[i+1][1] == 'DT':
+            if tag == 'DT' or tagged[i+1][1] == 'DT':
                 continue
 
-            else:
-                previous = text[i-1] if i != 0 else ''
-                next_ = text[i+1] if i + 1 != len(text) else ''
-                candidates = [
-                    ('%s %s %s' % (previous, word, next_), ''),
-                    ('%s the %s %s' % (previous, word, next_), 'the '),  #
-                    ('%s a %s %s' % (previous, word, next_), 'a '),  #
-                    ]
+            previous = text[i-1] if i != 0 else ''
+            next_ = text[i+1] if i + 1 != len(text) else ''
+            candidates = [
+                ('%s %s %s' % (previous, word, next_), ''),
+                ('%s the %s %s' % (previous, word, next_), 'the '),  #
+                ('%s a %s %s' % (previous, word, next_), 'a '),  #
+                ]
 
-                best = select_best_candidate(candidates)
-                text[i] = best + word
-
-                print candidates
-                print best, '\n'
+            best = select_best_candidate(candidates)
+            text[i] = best + word
 
     text = ' '.join(text).split()
 
@@ -459,9 +480,9 @@ if __name__ == '__main__':
 
     execute_reordering()
 
-    # # tagged tranlsation
-    # print '\n\033[4mTagged translation\033[0m:\n'
-    # print nltk.pos_tag(translate('parser/dev-reordered-30-stp.txt'))
+    # tagged tranlsation
+    print '\n\033[4mTagged translation\033[0m:\n'
+    print nltk.pos_tag(translate('parser/dev-reordered-30-stp.txt'))
 
     # string translation with post-processing
     print '\n\033[4mString translation (with post-processing)\033[0m:\n'

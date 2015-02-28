@@ -97,8 +97,6 @@ class StupidBackoffTrigramLanguageModel:
             score += math.log(C_count * 0.4)
             score -= math.log(self.total + len(self.unigrams))
 
-        # score /= max(len(sequence) - 2, 1)
-
         return score
 
 if __name__ == '__main__':
