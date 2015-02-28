@@ -1,4 +1,0 @@
-cd parser
-python sentenceReorder.py
-cd ..
-python baseline.py

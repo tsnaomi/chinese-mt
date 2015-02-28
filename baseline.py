@@ -6,7 +6,8 @@ import subprocess
 
 from defSelector import defSelector, getWord
 from ngram import StupidBackoffTrigramLanguageModel
-from pattern.en import lexeme, parse, superlative
+from pattern.en import lexeme, parse, referenced, superlative
+from pprint import pprint
 from PorterStemmer import PorterStemmer
 
 # a wrapper around nltk.pos_tag, which only accepts a tokenized list of words
@@ -15,8 +16,13 @@ tag = lambda w: nltk.pos_tag([w, ])[0][1]
 
 # To get a baseline translation, pass kw='baseline' to translate().
 
-def translate(filename='parser/dev-reordered-30-stp.txt', as_string=False,
-              pre=False, post=True, kw='optimized'):
+def translate(
+        filename='parser/dev-reordered-30-stp.txt',
+        as_string=False,
+        pre=False,
+        post=True,
+        kw='optimized',
+        ):
     '''Return a Chinese to English translation.'''
     # get a word-by-word translation
     translation = baseline_translate(filename, pre, kw)
@@ -27,7 +33,7 @@ def translate(filename='parser/dev-reordered-30-stp.txt', as_string=False,
 
     # if as_string is True, convert translation into a string
     if as_string:
-        translation = _translate_as_string(translation)
+        translation = _translate_as_string(translation, prettify=False)
 
     return translation
 
@@ -95,21 +101,22 @@ def baseline_translate(filename, preprocess, kw):
     return translation
 
 
-def _translate_as_string(list_translation):
-    # restore missingperiods
-    for i, word in enumerate(list_translation[2:], 2):
-        if word == '\n' and list_translation[i-1] != '.':
-            list_translation[i-1] += '.'
-
+def _translate_as_string(list_translation, prettify=True):
     # convert a list translation into a string translation
     string_translation = ' '.join(list_translation)
-    string_translation = _prettify(string_translation)
+
+    if prettify:
+        string_translation = _prettify(string_translation)
+
     string_translation = '.\n'.join(string_translation.split('. '))
 
     return string_translation
 
 
 def _prettify(text):
+    # remove sentence-onset tags
+    text = text.replace('<S>', '')
+
     # affix possessive 's to previous word
     text = text.replace(' \'s', '\'s').replace('s\'s', 's\'')
 
@@ -201,36 +208,50 @@ def postprocess(text):
     # refine word-by-word lookup
     text = refine_lookup(text)
 
-    # Tokenized prettified string translation
-    pretty = _translate_as_string(text)
-    tokenized = nltk.word_tokenize(pretty)
+    # tokenize prettified string translation
+    translation = _format_as_string(text)
 
     # generate superlatives
-    translation = render_superlatives(tokenized)
-
-    # strip markers
-    # translation = strip_markers(translation)
-
-    # position copulas before adverbs
-    translation = finesse_copulas(translation)
+    translation = render_superlatives(translation)
 
     # change negative determiners into negation
-    translation = convert_negative(tokenized)
+    translation = convert_negative(translation)
 
     # deal with the "under the sun" idiom
     translation = under_the_sun_idiom(translation)
 
-    for i in range(2):
-        # position copulas before adverbs
-        translation = finesse_copulas(translation)
+    # position copulas before adverbs
+    translation = finesse_copulas(translation)
 
-        # instert determiners
-        translation = insert_determiners(translation)
+    # inflect verbs
+    translation = inflect_verbs(translation)
 
-        # inflect verbs
-        translation = inflect_verbs(translation)
+    # instert determiners
+    translation = insert_determiners(translation)  # TODO
 
     return translation
+
+
+def _format_as_string(text):
+    # restore missing periods
+    for i, word in enumerate(text[2:], 2):
+        if word == '\n' and text[i-1] != '.':
+            text[i-1] += '.'
+
+    string = _translate_as_string(text, prettify=False)
+    tokenized = nltk.word_tokenize(string)
+
+    # add initial sentence-onset tag
+    for i in range(len(tokenized[:-1])):
+        if i == 0 or tokenized[i-1] == '.':
+            tokenized[i] = '<S> ' + tokenized[i]
+
+    import pdb; pdb.set_trace()
+
+    # render sentence-onset tags their own token
+    tokenized = ' '.join(tokenized).split(' ')
+
+    return tokenized
 
 
 def select_best_candidate(candidates):
@@ -238,14 +259,10 @@ def select_best_candidate(candidates):
     # assumes that candidates is a list of tuples of the form:
     # ('previous-word target-word next-word', 'target-word')
     # here, the target word for the highest scored trigram is returned
-    # for c in candidates:
-    #     if c[1] == 'achieve':
-    #         from pprint import pprint
-    #         pprint(candidates, width=1)
     candidates = [(c[0].replace('  ', ' ').strip(), c[1]) for c in candidates]
     scores = [(stupid.score(c[0].split()), c[0], c[1]) for c in candidates]
     best = max(scores)
-    # print best
+    # print scores, best, '\n'
     return best[2]
 
 
@@ -255,13 +272,26 @@ def refine_lookup(text):
 
         if '/' in word:
             words = word.split('/')
-
+            candidates = []
             previous = text[i-1] if i != 0 else ''
             next_ = text[i+1] if i != len(text) else ''
-            candidates = [
-                ('%s %s %s' % (previous, w, next_), w)
-                for w in words
-                ]
+
+            if '/' in next_:
+                next_ = next_.split('/')
+
+                for n in next_:
+                    candidates_ = [
+                        ('%s %s %s' % (previous, w, n), w)
+                        for w in words
+                        ]
+
+            else:
+                candidates_ = [
+                    ('%s %s %s' % (previous, w, next_), w)
+                    for w in words
+                    ]
+
+            candidates.extend(candidates_)
 
             best = select_best_candidate(candidates)
             text[i] = best
@@ -280,52 +310,13 @@ def render_superlatives(text):
     return text
 
 
-def strip_markers(text):
-    '''Strip grammatical markers, which appear in all caps upon lookup.'''
-    for i, word in enumerate(text):
-
-        # remove grammatical markers, e.g., THAT
-        # if word.isupper():
-        if word == 'THAT':  # salvage RMB
-            text[i] = ''
-
-    text = ' '.join(text).split()
-
-    return text
-
-
-def finesse_copulas(text):
-    '''Position copulas before ADVs.'''
-    tagged = nltk.pos_tag(text)
-
-    for i, word in enumerate(text):
-
-        if word == 'be':
-
-            # remove marker-like copulas, which taggers interpret as nouns
-            if tagged[i][1].startswith('N'):
-                text[i] = ''
-
-            # move copulas before adverbs
-            elif i != 0 and tag(text[i-1]) == 'RB':
-
-                prev = i - 1
-                while i > 0 and tagged[prev][1] == 'RB':
-                    prev -= 1
-
-                text[i] = ''
-                text[prev + 1] = 'be ' + text[prev + 1]
-
-            # remove copulas preceding prepositional phrases
-            # 'IN' is the tag for prepositions
-            elif i + 1 <= len(text) and tagged[i+1][1] == 'IN':
-                text[i] = ''
-
-    return text
+def genitive_alternation(text):  # TODO
+    pass
 
 
 def convert_negative(text):
     '''Convert 'no' determiners into the negative 'not'.'''
+
     tagged = nltk.pos_tag(text)
 
     for i, word in enumerate(text):
@@ -360,32 +351,32 @@ def under_the_sun_idiom(text):
     return text
 
 
-def insert_determiners(text):
-    '''Insert determiners'''
+def finesse_copulas(text):
+    '''Position copulas before ADVs.'''
     tagged = nltk.pos_tag(text)
 
     for i, word in enumerate(text):
-        tag = tagged[i][1]
-        modifiers = ('RB', 'JJ', 'CD', 'DT', 'POS', 'NN')
 
-        if tag.startswith(modifiers):
+        if word == 'be':
 
-            if i != 0 and tagged[i-1][1].startswith(modifiers):
-                continue
+            # remove marker-like copulas, which taggers interpret as nouns
+            if tagged[i][1].startswith('N'):
+                text[i] = ''
 
-            else:
-                previous = text[i-1] if i != 0 else ''
-                next_ = text[i+1] if i + 1 != len(text) else ''
-                candidates = [
-                    ('%s %s %s' % (previous, word, next_), ''),
-                    ('%s the %s %s' % (previous, word, next_), 'the '),
-                    ('%s a %s %s' % (previous, word, next_), 'a '),
-                    ]
+            # move copulas before adverbs
+            elif i != 0 and tagged[i-1][1] == 'RB':
 
-                best = select_best_candidate(candidates)
-                text[i] = best + word
+                prev = i - 1
+                while i > 0 and tagged[prev][1] == 'RB':
+                    prev -= 1
 
-    text = ' '.join(text).split()
+                text[i] = ''
+                text[prev + 1] = 'be ' + text[prev + 1]
+
+            # remove copulas preceding prepositional phrases
+            # 'IN' is the tag for prepositions
+            elif i + 1 <= len(text) and tagged[i+1][1] == 'IN':
+                text[i] = ''
 
     return text
 
@@ -397,27 +388,61 @@ def inflect_verbs(text):
     for i, word in enumerate(text):
 
         if tagged[i][1].startswith('V'):
-            inflections = lexeme(word)
+            paradigm = lexeme(word)
+            negatives = ('n\'t', ' not')
+            inflections = [v for v in paradigm if not v.endswith(negatives)]
+
+            # preserve negation
+            if word not in inflections:
+                continue
+
             candidates = []
 
             for v in inflections:
-                previous1 = text[i-2] if i > 1 else ''
-                previous2 = text[i-1] if i > 1 else ''
+                prev1 = text[i-2] if i > 1 else ''
+                prev2 = text[i-1] if i > 1 else ''
                 next_ = text[i+1] if i + 1 != len(text) else ''
-                cand1 = ('%s %s %s %s' % (
-                    previous1,
-                    previous2,
-                    v,
-                    next_), v)
-                cand2 = ('%s %s to %s %s' % (  # attempt at the infinitive
-                    previous1,
-                    previous2,
-                    v,
-                    next_), v)
-                candidates.extend([cand1, cand2])
+                c = ('%s %s %s %s' % (prev1, prev2, v, next_), v)
+                candidates.append(c)
 
             best = select_best_candidate(candidates)
             text[i] = best
+
+    text = ' '.join(text).split()
+
+    return text
+
+
+def insert_determiners(text):
+    '''Insert determiners'''
+    tagged = nltk.pos_tag(text)
+
+    for i, word in enumerate(text):
+        tag = tagged[i][1]
+        modifiers = ('RB', 'JJ', 'CD', 'DT', 'POS', 'NN')
+
+        if tag.startswith(modifiers):
+
+            if i == 0 or tagged[i-1][1].startswith(modifiers):
+                continue
+
+            elif i + 1 != len(text) and tagged[i+1][1] == 'DT':
+                continue
+
+            else:
+                previous = text[i-1] if i != 0 else ''
+                next_ = text[i+1] if i + 1 != len(text) else ''
+                candidates = [
+                    ('%s %s %s' % (previous, word, next_), ''),
+                    ('%s the %s %s' % (previous, word, next_), 'the '),  #
+                    ('%s a %s %s' % (previous, word, next_), 'a '),  #
+                    ]
+
+                best = select_best_candidate(candidates)
+                text[i] = best + word
+
+                print candidates
+                print best, '\n'
 
     text = ' '.join(text).split()
 
@@ -441,12 +466,12 @@ if __name__ == '__main__':
     # string translation with post-processing
     print '\n\033[4mString translation (with post-processing)\033[0m:\n'
     translation = translate(as_string=True)
-    print translation
+    print '\n', translation
 
-    # string translation without post-processing
-    print '\n\033[4mString translation (no post-processing)\033[0m:\n'
-    translation2 = translate(as_string=True, post=False)
-    print translation2
+    # # string translation without post-processing
+    # print '\n\033[4mString translation (no post-processing)\033[0m:\n'
+    # translation2 = translate(as_string=True, post=False).replace('\n\n', '\n')
+    # print translation2
 
     # # parsed translation
     # print parse(translation)
