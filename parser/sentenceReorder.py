@@ -2,6 +2,7 @@
 
 from nltk.tree import *
 from nltk.draw import tree
+import sys
 
 def reorder(parsed_tree):
   """ takes a parse tree, return a re-ordered tree 
@@ -168,9 +169,18 @@ def substituteNormalNumbers(s):
   return(s)  
 
 if __name__ == '__main__':
-    
-  parsed_path = "./redev-parsed-30-stp.txt"
+
+  parsed_path = "./dev-parsed-30-stp.txt"  # default development set
+
+  if len(sys.argv) > 1:
+    args = sys.argv[1:]
+    parsed_path = sys.argv[1]
+
   output_path = parsed_path.replace("parsed", "reordered")
+
+  #if len(args) > 1 and sys.argv[1] == "-same":
+  # output_path = parsed_path.replace("reordered", "same")
+
 
   with open(parsed_path, 'r') as parsed_file:
     raw_parsed = parsed_file.read()
