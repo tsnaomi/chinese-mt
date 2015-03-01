@@ -7,7 +7,16 @@ import sys
 
 from defSelector import defSelector, getWord
 from ngram import StupidBackoffTrigramLanguageModel
-from pattern.en import conjugate, lexeme, referenced, superlative
+from pattern.en import (
+    conjugate,
+    # lemma,
+    lexeme,
+    # parse,
+    pluralize,
+    referenced,
+    # suggest,
+    superlative
+    )
 
 
 stupid = StupidBackoffTrigramLanguageModel()
@@ -186,6 +195,9 @@ def execute_reordering():
 
 def postprocess(translation):
     '''Apply functions to a translation to achieve modest English fluency.'''
+    # strip clause marker
+    translation = strip_complementizer(translation)
+
     # apply genitive alternation
     translation = try_genitive_alternations(translation)
 
@@ -201,9 +213,12 @@ def postprocess(translation):
     # position copulas before adverbs
     translation = finesse_copulas(translation)
 
+    # pluralize nouns modified by cardinal numbers
+    translation = pluralize_nouns(translation)
+
     equilibrium = None
 
-    while equilibrium != translation:
+    while equilibrium != translation:  # and count < 20:
         equilibrium = translation
 
         # inflect verbs
@@ -225,6 +240,15 @@ def select_best_candidate(candidates):
     best = max(scores)
     # print scores, '\n', 'winner: ', best, '\n'
     return best[2]
+
+
+def strip_complementizer(text):
+    for i, word in enumerate(text):
+
+        if word == 'that':
+            text[i] = ''
+
+    return text
 
 
 def try_genitive_alternations(text):
@@ -262,14 +286,14 @@ def render_superlatives(text):
     for i, word in enumerate(text):
 
         if word == 'MOST' and i + 1 != len(text):
-            text[i] = 'the'
+            text[i] = ''
             text[i+1] = superlative(text[i+1])
 
     return text
 
 
 def convert_negatives(text):
-    '''Convert 'no' determiners into the negative 'not'.'''
+    '''Finesse negative determiners and negation.'''
     tagged = nltk.pos_tag(text)
 
     for i, word in enumerate(text):
@@ -282,6 +306,7 @@ def convert_negatives(text):
 
             best = select_best_candidate(candidates)
             text[i] = best
+            continue
 
     return text
 
@@ -352,20 +377,25 @@ def inflect_verbs(text):
             candidates = []
 
             for v in inflections:
-                inf = conjugate(v, tense='INFINITIVE')
                 prev1 = text[i-2] if i > 1 else ''
                 prev2 = text[i-1] if i > 1 else ''
                 next_ = text[i+1] if i + 1 != len(text) else ''
                 c = ('%s %s %s %s' % (prev1, prev2, v, next_), v)
                 candidates.append(c)
 
-            # attempt to capture infinitives
-            inf = conjugate(v, tense='INFINITIVE')
-            to = (
-                '%s %s to %s %s' % (prev1, prev2, inf, next_),
-                'to %s' % inf
-                )
-            candidates.append(to)
+            # capture infinitives, but exclude the copula for how popular it is
+            if text[i-1] != 'to' and word != 'be':
+
+                x = i - 1
+                while text[x] != ',' and text[x] != '<S>':
+                    x -= 1
+
+                if any(y[1].startswith('V') for y in tagged[x:i]):
+                    inf = conjugate(word, tense='INFINITIVE')
+                    to = (
+                        '%s %s to %s' % (prev1, prev2, inf),
+                        'to %s' % inf)
+                    candidates.append(to)
 
             best = select_best_candidate(candidates)
             text[i] = best
@@ -408,6 +438,29 @@ def insert_determiners(text):
     return text
 
 
+def pluralize_nouns(text):
+    tagged = nltk.pos_tag(text)
+
+    for i, word in enumerate(text[:-1]):
+
+        if tagged[i][1] == 'CD' and word != 'one' and word != '1':
+
+            nn = i + 1
+            while not tagged[nn][1].startswith('N'):
+                nn += 1
+
+            # if the cardinal number is modifying a noun
+            if tagged[nn][1].startswith('N'):
+
+                # if the noun is not already plural
+                if not tagged[nn][1].endswith('P'):
+                    NS = pluralize(text[nn])
+                    text[nn] = NS
+
+    text = ' '.join(text).split()
+
+    return text
+
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
@@ -440,17 +493,10 @@ if __name__ == '__main__':
     REFINED = False if '-dict' in args else True
     POST = False if '-post-false' in args or not REFINED or BASELINE else True
 
-    # # tagged tranlsation
-    # print '\n\033[4mTagged translation\033[0m:\n'
-    # pos = translate(post=POST, refined=REFINED, baseline=BASELINE)
-    # print '\n', nltk.pos_tag(pos)
-
-    # string translation with post-processing
     print '\n\033[4m%s string translation\033[0m:\n' % CAPTION
     t = translate(FILENAME, post=POST, refined=REFINED, baseline=BASELINE)
     print '\n', t
 
     # # parsed translation
     # print '\n\033[4mParsed translation\033[0m:\n'
-    # from pattern.en import parse
-    # print '\n', parse(t, relations=True)
+    # print '\n', parse(t, chunks=False)  # relations=True
