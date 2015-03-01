@@ -11,7 +11,7 @@ from pattern.en import (
     conjugate,
     # lemma,
     lexeme,
-    # parse,
+    parse,
     pluralize,
     referenced,
     suggest,
@@ -484,7 +484,7 @@ if __name__ == '__main__':
     args = sys.argv[1:]
 
     def get_filename():
-        if '-baseline' and '-test' in args:
+        if '-baseline' in args and '-test' in args:
             # translate the segmented test set
             return 'tagger/tagged_test.txt'
 
@@ -528,6 +528,6 @@ if __name__ == '__main__':
     t = translate(FILENAME, post=POST, refined=REFINED, baseline=BASELINE)
     print '\n', t, '\n'
 
-    # # parsed translation
-    # print '\n\033[4mParsed translation\033[0m:\n'
-    # print '\n', parse(t, chunks=False)  # relations=True
+    # parsed translation
+    print '\n\033[4mParsed translation\033[0m:\n'
+    print '\n', parse(t, chunks=False)  # relations=True
