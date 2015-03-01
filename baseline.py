@@ -400,8 +400,8 @@ def insert_determiners(text):
 if __name__ == '__main__':
     args = sys.argv[1:]
 
-    POST = False if '-post-false' in args else True
     KW = 'baseline' if '-baseline' in args else 'optimized'
+    POST = False if '-post-false' in args or KW == 'baseline' else True
 
     if '-test' in args:
         # translate the test set
