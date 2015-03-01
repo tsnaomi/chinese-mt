@@ -1,0 +1,88 @@
+(IP
+  (NP
+    (DNP
+      (NP
+        (DNP
+          (NP (NR 中国))
+          (DEG 的))
+        (NP (NN 筷子)))
+      (DEG 的))
+    (NP (NN 价格)))
+  (VP
+    (ADVP (AD 很))
+    (VP (VA 便宜)))
+  (PU 。))
+
+(IP
+  (IP
+    (NP
+      (DNP
+        (NP (NN 筷子))
+        (DEG 的))
+      (NP (NN 功能)))
+    (VP
+      (ADVP (AD 很))
+      (VP (VA 多))))
+  (PU ，)
+  (IP
+    (ADVP (AD 比如))
+    (VP (VV 吃饭)))
+  (PU 。))
+
+(IP
+  (NP
+    (DNP
+      (NP (NN 筷子))
+      (DEG 的))
+    (NP (NN 发明者)))
+  (VP (VC 是)
+    (NP (NN 中国人)))
+  (PU 。))
+
+(IP
+  (IP
+    (NP
+      (CP
+        (IP
+          (VP (VV 使用)
+            (NP (NN 筷子))))
+        (DEC 的))
+      (NP (NN 外国人)))
+    (PU ，)
+    (VP (VE 有)
+      (NP
+        (DNP
+          (QP (CD 很多))
+          (DEG 的))
+        (NP (NN 问题)))))
+  (PU ，)
+  (IP
+    (ADVP (AD 尤其是))
+    (NP (NN 移动))
+    (VP
+      (ADVP (AD 不))
+      (VP (VV 便于)
+        (NP (NN 平衡)))))
+  (PU 。))
+
+(IP
+  (ADVP (AD 但))
+  (NP
+    (QP
+      (ADVP (AD 越来越))
+      (QP (CD 多)))
+    (DNP
+      (NP (NR 美国))
+      (DEG 的))
+    (NP (NN 发明者)))
+  (VP (VV 关注)
+    (NP
+      (NP
+        (DNP
+          (NP (NN 筷子))
+          (DEG 的))
+        (NP (NN 知识) (NN 产权)))
+      (CC 和)
+      (NP (NN 倾销))))
+  (PU 。))
+
