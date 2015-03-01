@@ -156,19 +156,19 @@ def chooseTimeNoun(word, index, sentence):
 
 
 def addThe(word):
+	# add "the" for ordinal numbers ; or common nouns NN
 	if len(word) >= 4 and word[0:4] == "the ":
 		return word
 	else:
 		return "the " + word
-
 
 def chooseOrdinalNumber(word, index, sentence):
 	base = getDictEntryByPrecedence(word, [], result="first")
 	return addThe(base)
 
 def chooseMeasureWord(word, index, sentence):
-	# hopefully, more fine-grained distinctions?
-	# 
+	# Measure words ("real" Chinese classifiers) are deleted
+	# Exceptions are units of measurement, they are not really Chinese classifiers
 	if word in ["年", "倍", "美元"]:
 		return getDictEntryByPrecedence(word, ['measure word', 'n'])
 	return "" 
