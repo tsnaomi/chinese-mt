@@ -308,7 +308,7 @@ def relocate_under_the_sun_idiom(text):
 
 
 def finesse_copulas(text):
-    '''Position copulas before ADVs.'''
+    '''Position copulas before ADVs and delete them before prepositions.'''
     tagged = nltk.pos_tag(text)
 
     for i, word in enumerate(text):
