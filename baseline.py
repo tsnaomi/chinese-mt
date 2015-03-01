@@ -206,7 +206,7 @@ def postprocess(translation):
 
     equilibrium = None
 
-    while equilibrium != translation:
+    while equilibrium != translation:  # and count < 20:
         equilibrium = translation
 
         # inflect verbs
@@ -355,20 +355,26 @@ def inflect_verbs(text):
             candidates = []
 
             for v in inflections:
-                inf = conjugate(v, tense='INFINITIVE')
+                # inf = conjugate(v, tense='INFINITIVE')
                 prev1 = text[i-2] if i > 1 else ''
                 prev2 = text[i-1] if i > 1 else ''
                 next_ = text[i+1] if i + 1 != len(text) else ''
                 c = ('%s %s %s %s' % (prev1, prev2, v, next_), v)
                 candidates.append(c)
 
-            # attempt to capture infinitives
-            inf = conjugate(v, tense='INFINITIVE')
-            to = (
-                '%s %s to %s %s' % (prev1, prev2, inf, next_),
-                'to %s' % inf
-                )
-            candidates.append(to)
+            # # capture infinitives
+            # if text[i-1] != 'to':
+            #     x = i - 1
+            #     while text[x] != ',' and text[x] != '<S>':
+            #         x -= 1
+
+            #     if x != i - 1:
+            #         if any(y[1].startswith('V') for y in tagged[x:i]):
+            #             print tagged[x:i]
+            #             to = (
+            #                 '%s %s to %s' % (prev1, prev2, inf),
+            #                 'to %s' % inf)
+            #             candidates.append(to)
 
             best = select_best_candidate(candidates)
             text[i] = best
@@ -416,27 +422,19 @@ def pluralize_nouns(text):
 
     for i, word in enumerate(text[:-1]):
 
-        if tagged[i][1] == 'CD':
+        if tagged[i][1] == 'CD' and word != 'one' and word != '1':
 
-            n = i + 1
-            while tagged[n][1].startswith('N'):
-                n += 1
+            nn = i + 1
+            while not tagged[nn][1].startswith('N'):
+                nn += 1
 
             # if the cardinal number is modifying a noun
-            if n != i + 1:
-                N = text[n-1]
+            if tagged[nn][1].startswith('N'):
 
                 # if the noun is not already plural
-                if not tagged[n-1][1].endswith('P'):
-                    NS = pluralize(N)
-                    modifier = ' '.join(text[i:n-1])
-                    candidates = [
-                        ('%s %s %s' % (modifier, N, text[n]), N),
-                        ('%s %s %s' % (modifier, NS, text[n]), NS),
-                        ]
-
-                    best = select_best_candidate(candidates)
-                    text[n-1] = best
+                if not tagged[nn][1].endswith('P'):
+                    NS = pluralize(text[nn])
+                    text[nn] = NS
 
     text = ' '.join(text).split()
 
@@ -474,11 +472,6 @@ if __name__ == '__main__':
     REFINED = False if '-dict' in args else True
     POST = False if '-post-false' in args or not REFINED or BASELINE else True
 
-    # # tagged tranlsation
-    # print '\n\033[4mTagged translation\033[0m:\n'
-    # pos = translate(post=POST, refined=REFINED, baseline=BASELINE)
-    # print '\n', nltk.pos_tag(pos)
-
     # string translation with post-processing
     print '\n\033[4m%s string translation\033[0m:\n' % CAPTION
     t = translate(FILENAME, post=POST, refined=REFINED, baseline=BASELINE)
@@ -486,4 +479,4 @@ if __name__ == '__main__':
 
     # # parsed translation
     # print '\n\033[4mParsed translation\033[0m:\n'
-    # print '\n', parse(t)  # relations=True
+    # print '\n', parse(t, chunks=False)  # relations=True
