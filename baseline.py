@@ -7,7 +7,16 @@ import sys
 
 from defSelector import defSelector, getWord
 from ngram import StupidBackoffTrigramLanguageModel
-from pattern.en import conjugate, lexeme, parse, pluralize, referenced, superlative
+from pattern.en import (
+    conjugate,
+    # lemma,
+    lexeme,
+    # parse,
+    pluralize,
+    referenced,
+    # suggest,
+    superlative
+    )
 
 
 stupid = StupidBackoffTrigramLanguageModel()
@@ -186,6 +195,9 @@ def execute_reordering():
 
 def postprocess(translation):
     '''Apply functions to a translation to achieve modest English fluency.'''
+    # strip clause marker
+    translation = strip_complementizer(translation)
+
     # apply genitive alternation
     translation = try_genitive_alternations(translation)
 
@@ -230,6 +242,15 @@ def select_best_candidate(candidates):
     return best[2]
 
 
+def strip_complementizer(text):
+    for i, word in enumerate(text):
+
+        if word == 'that':
+            text[i] = ''
+
+    return text
+
+
 def try_genitive_alternations(text):
     '''Apply the genitive for if it scores better than the posessive.
 
@@ -272,7 +293,7 @@ def render_superlatives(text):
 
 
 def convert_negatives(text):
-    '''Convert 'no' determiners into the negative 'not'.'''
+    '''Finesse negative determiners and negation.'''
     tagged = nltk.pos_tag(text)
 
     for i, word in enumerate(text):
@@ -285,6 +306,7 @@ def convert_negatives(text):
 
             best = select_best_candidate(candidates)
             text[i] = best
+            continue
 
     return text
 
@@ -355,26 +377,25 @@ def inflect_verbs(text):
             candidates = []
 
             for v in inflections:
-                # inf = conjugate(v, tense='INFINITIVE')
                 prev1 = text[i-2] if i > 1 else ''
                 prev2 = text[i-1] if i > 1 else ''
                 next_ = text[i+1] if i + 1 != len(text) else ''
                 c = ('%s %s %s %s' % (prev1, prev2, v, next_), v)
                 candidates.append(c)
 
-            # # capture infinitives
-            # if text[i-1] != 'to':
-            #     x = i - 1
-            #     while text[x] != ',' and text[x] != '<S>':
-            #         x -= 1
+            # capture infinitives, but exclude the copula for how popular it is
+            if text[i-1] != 'to' and word != 'be':
 
-            #     if x != i - 1:
-            #         if any(y[1].startswith('V') for y in tagged[x:i]):
-            #             print tagged[x:i]
-            #             to = (
-            #                 '%s %s to %s' % (prev1, prev2, inf),
-            #                 'to %s' % inf)
-            #             candidates.append(to)
+                x = i - 1
+                while text[x] != ',' and text[x] != '<S>':
+                    x -= 1
+
+                if any(y[1].startswith('V') for y in tagged[x:i]):
+                    inf = conjugate(word, tense='INFINITIVE')
+                    to = (
+                        '%s %s to %s' % (prev1, prev2, inf),
+                        'to %s' % inf)
+                    candidates.append(to)
 
             best = select_best_candidate(candidates)
             text[i] = best
@@ -472,7 +493,6 @@ if __name__ == '__main__':
     REFINED = False if '-dict' in args else True
     POST = False if '-post-false' in args or not REFINED or BASELINE else True
 
-    # string translation with post-processing
     print '\n\033[4m%s string translation\033[0m:\n' % CAPTION
     t = translate(FILENAME, post=POST, refined=REFINED, baseline=BASELINE)
     print '\n', t
