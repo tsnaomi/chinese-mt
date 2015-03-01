@@ -1,4 +1,6 @@
-﻿import re
+﻿# coding=utf-8
+
+import re
 import subprocess
 
 from dictionary import dictionary
@@ -20,7 +22,8 @@ def defSelector(index, sentence, baseline=False):
 		return getFirstDictEntry(word)
 
 	else:
-		if tag == "NN" or tag == "NR": return chooseNoun(word, index, sentence)
+		if tag == "NN": return chooseNoun(word, index, sentence)
+		elif tag == "NR": return chooseNameNoun(word, index, sentence)
 		elif tag == "NT": return chooseTimeNoun(word, index, sentence)
 		elif tag == "OD": return chooseOrdinalNumber(word, index, sentence)
 		elif tag == "M": return chooseMeasureWord(word, index, sentence)
@@ -114,6 +117,13 @@ def choosePreposition(word, index, sentence):
 
 	return getDictEntryByPrecedence(word, ['prep', 'v'])
 
+def pluralize(word):
+	if word[-1] != "s":
+		if word[-1] == "y": return word[:-1] + "ies"
+		else: return word + "s"
+	else:
+		return word
+
 def chooseNoun(word, index, sentence):
 	base = getDictEntryByPrecedence(word, ['n', 'npl'])
 	# add determiner unless there is a noun before (a compound)
@@ -123,6 +133,15 @@ def chooseNoun(word, index, sentence):
 	# consider the possessive form if before another NN (might be useful)
 	# if index < len(sentence) and getTag(sentence[index+1]) == "NN":
 	#	base = base + '/' +'/'.join([w+" 's" for w in base.split('/')])
+
+	# pluralize if no another NN after (might be useful)
+	if index < len(sentence) and getTag(sentence[index+1]) not in ["NN", "NR", "NT"]:
+		base = base # + '/' +'/'.join([pluralize(w) for w in base.split('/')]) # pluralization
+	return base
+
+def chooseNameNoun(word, index, sentence):
+	base = getDictEntryByPrecedence(word, ['n', 'npl'])
+
 	return base
 
 
@@ -142,11 +161,6 @@ def addThe(word):
 	else:
 		return "the " + word
 
-def pluralize(word):
-	if word[-1] != "s":
-		return word + "s"
-	else:
-		return word
 
 def chooseOrdinalNumber(word, index, sentence):
 	base = getDictEntryByPrecedence(word, [], result="first")
@@ -155,7 +169,7 @@ def chooseOrdinalNumber(word, index, sentence):
 def chooseMeasureWord(word, index, sentence):
 	# hopefully, more fine-grained distinctions?
 	# 
-	if word in ["年", "倍"]:
+	if word in ["年", "倍", "美元"]:
 		return getDictEntryByPrecedence(word, ['measure word', 'n'])
 	return "" 
 
