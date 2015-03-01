@@ -21,6 +21,7 @@ def defSelector(index, sentence, option="optimized"):
 	elif option == "optimized":
 		if tag == "NN" or tag == "NR": return chooseNoun(word, index, sentence)
 		elif tag == "NT": return chooseTimeNoun(word, index, sentence)
+		elif tag == "OD": return chooseOrdinalNumber(word, index, sentence)
 		elif tag == "M": return chooseMeasureWord(word, index, sentence)
 		elif tag == "VV" or tag == "VC": return chooseVerb(word, index, sentence)
 		elif tag == "VE": return chooseVE(word, index, sentence)
@@ -56,8 +57,25 @@ def chooseAspectParticle(word, index, sentence):
 def chooseSentenceFinalParticle(word, index, sentence):
 	return ''
 
+
+def pron2poss(word):
+	if word == "I": return "my"
+	if word == "you" or word == "You": return "you"
+	if word == "he" or word == "He": return "his"
+	if word == "she" or word == "She": return "her"
+	if word == "it" or word == "It": return "its"
+	if word == "we" or word == "We": return "our"
+	if word == "they" or word == "They": return "their"
+
+	return word
+
 def choosePronoun(word, index, sentence):
-	return getDictEntryByPrecedence(word, ['pron'])
+	base = getDictEntryByPrecedence(word, ['pron'])
+	if index < len(sentence) and getWord(sentence[index+1]) == "的":
+		base = base.split('/')
+		base = [pron2poss(w) for w in base]
+		return '/'.join(base)
+	return base
 
 def choosePredAdjective(word, index, sentence):
   # predicative adjectives; add copula before
@@ -91,7 +109,18 @@ def chooseNoun(word, index, sentence):
 
 def chooseTimeNoun(word, index, sentence):
 	base = getDictEntryByPrecedence(word, ['n', 'npl'], result="first")
-	return "in "+base     #  +'/' + base +'/' + "on "+base+'/' + "at "+base+'/'
+	return base + "/in "+base + "/on "+base + "/at "+base + '/during '+base
+
+
+def addThe(word):
+	if len(word) >= 4 and word[0:4] == "the ":
+		return word
+	else:
+		return "the " + word
+
+def chooseOrdinalNumber(word, index, sentence):
+	base = getDictEntryByPrecedence(word, [], result="first")
+	return addThe(base)
 
 def chooseMeasureWord(word, index, sentence):
 	return getDictEntryByPrecedence(word, ['measure word', 'n'])
@@ -100,14 +129,17 @@ def chooseMeasureWord(word, index, sentence):
 #tense returned in all caps as second item present, past, future, progressive, perfective ("have done something"), infinitive
 def chooseVerb(word, index, sentence):
 	verb = getDictEntryByPrecedence(word, ['v'])
+	prep = getDictEntryByPrecedence(word, ['prep'], default=[])
 	if index == 0: case = "PROGRESSIVE"
 	elif verbInPrepPhrase(index, sentence): case = "INFINITIVE"
 	elif verbFollowingVerb(index, sentence): case = "INFINITIVE"
 	elif verbHasProgressiveModifier(index, sentence): case = "PROGRESSIVE"
 	elif verbHasPerfectiveModifier(index, sentence): case = "PERFECTIVE"
 	else: case = "PRESENT"
-
-	return verb, case
+	if prep: 
+		return verb + '/' + prep, case
+	else: 
+		return verb, case
 
 def chooseVE(word, index, sentence):
 	verb = getDictEntryByPrecedence(word, ['v'])
@@ -122,6 +154,7 @@ def chooseVE(word, index, sentence):
 
 
 def adj2Adv(word):
+	if len(word) > 1 and word[-2:] == 'ly': return word
 	if word[-1] == 'y': return word[:-1] + "ily" 
 	else: return word + "ly"
 
@@ -136,21 +169,21 @@ def chooseAdverb(word, index, sentence):
         
 	bestOption = getDictEntryByPrecedence(word, ['adj'], default=[])
 	if bestOption: 
-		return '/'.join([adj2Adv(w) for w in bestOption.split('/')])
+		return bestOption + '/' + '/'.join([adj2Adv(w) for w in bestOption.split('/')])
 			
 
 	bestOption = getDictEntryByPrecedence(word, ['v'], default=[])
 	if bestOption:
-		return '/'.join([v2Adv(w) for w in bestOption.split('/')])
+		return bestOption + '/' + '/'.join([v2Adv(w) for w in bestOption.split('/')])
 
 	return getFirstDictEntry(word)
 
 def complementizerDE(word, index, sentence):
 
-	return "that" # /which/who
+	return "that"  #/which/who
 
 def genitiveDE(word, index, sentence):
-	if index > 0 and getTag(sentence[index-1]) in ["VA", "JJ"]:
+	if index > 0 and getTag(sentence[index-1]) in ["VA", "JJ", "PN"]:
 		return ""
 
 	return "'s"
