@@ -13,15 +13,13 @@ from pattern.en import conjugate, lexeme, referenced, superlative
 stupid = StupidBackoffTrigramLanguageModel()
 
 
-# To get a baseline translation, pass kw='baseline' to translate().
-
-def translate(filename, as_string=False, post=True, kw='optimized'):
+def translate(filename, post=True, refined=True, baseline=False):
     '''Return a Chinese to English translation.'''
     # ensure that the pre-processed text is up-to-date
     execute_reordering()
 
     # get a word-by-word translation
-    translation = baseline_translate(filename, kw)
+    translation = baseline_translate(filename, refined, baseline)
 
     # tokenize prettified string translation
     translation = _prepare_as_string(translation)
@@ -30,14 +28,13 @@ def translate(filename, as_string=False, post=True, kw='optimized'):
         # apply post-processing strategies
         translation = postprocess(translation)
 
-    # if as_string is True, convert translation into a string
-    if as_string:
-        translation = _translate_as_string(translation)
+    # convert translation into a string
+    translation = _translate_as_string(translation)
 
     return translation
 
 
-def baseline_translate(filename, kw):
+def baseline_translate(filename, refined=True, baseline=False):
     '''Return a primitive translation of a file from Chinese into English.
 
     This function produces a word-by-word translation.
@@ -67,7 +64,7 @@ def baseline_translate(filename, kw):
                 try:
                     # grab English translation(s) of the word
                     # change kw to "baseline" to get a baseline translation
-                    token = defSelector(i, line, kw)
+                    token = defSelector(i, line, baseline)
 
                     # if token is a tuple, take only the first item in the
                     # tuple, which will be a verb
@@ -81,7 +78,7 @@ def baseline_translate(filename, kw):
             if token:
                 translation.append(token)
 
-    if kw == 'optimized':
+    if refined:
         # refine the word-by-word translation by selecting the *best*
         # translation for each word
         translation = _refine_lookup(translation)
@@ -429,26 +426,31 @@ if __name__ == '__main__':
         if '-baseline' in args:
             return 'Baseline'
 
+        elif '-dict' in args:
+            return 'Verbose'
+
         elif '-post-false' in args:
             return 'Refined-lookup'
 
         return 'Post-processed'
 
     FILENAME = get_filename()
-    KW = 'baseline' if '-baseline' in args else 'optimized'
-    POST = False if '-post-false' in args or KW == 'baseline' else True
     CAPTION = get_caption()
+    BASELINE = True if '-baseline' in args else False
+    REFINED = False if '-dict' in args else True
+    POST = False if '-post-false' in args or not REFINED or BASELINE else True
 
     # # tagged tranlsation
     # print '\n\033[4mTagged translation\033[0m:\n'
-    # print nltk.pos_tag(translate(FILENAME,  post=POST, kw=KW))
+    # pos = translate(post=POST, refined=REFINED, baseline=BASELINE)
+    # print '\n', nltk.pos_tag(pos)
 
     # string translation with post-processing
     print '\n\033[4m%s string translation\033[0m:\n' % CAPTION
-    translation = translate(FILENAME, as_string=True, post=POST, kw=KW)
-    print '\n', translation
+    t = translate(FILENAME, post=POST, refined=REFINED, baseline=BASELINE)
+    print '\n', t
 
     # # parsed translation
     # print '\n\033[4mParsed translation\033[0m:\n'
     # from pattern.en import parse
-    # print '\n', parse(translation, relations=True)
+    # print '\n', parse(t, relations=True)

@@ -10,15 +10,15 @@ from dictionary import dictionary
 #selected option ("baseline" or "optimized")
 ########################################################
 
-def defSelector(index, sentence, option="optimized"):
+def defSelector(index, sentence, baseline=False):
 
 	word = getWord(sentence[index])
 	tag = getTag(sentence[index])
 	
-	if option == "baseline": 
+	if baseline:
 		return getFirstDictEntry(word)
 
-	elif option == "optimized":
+	else:
 		if tag == "NN" or tag == "NR": return chooseNoun(word, index, sentence)
 		elif tag == "NT": return chooseTimeNoun(word, index, sentence)
 		elif tag == "M": return chooseMeasureWord(word, index, sentence)
