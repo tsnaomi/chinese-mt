@@ -17,8 +17,14 @@ stupid = StupidBackoffTrigramLanguageModel()
 
 def translate(filename, as_string=False, post=True, kw='optimized'):
     '''Return a Chinese to English translation.'''
+    # ensure that the pre-processed text is up-to-date
+    execute_reordering()
+
     # get a word-by-word translation
     translation = baseline_translate(filename, kw)
+
+    # tokenize prettified string translation
+    translation = _prepare_as_string(translation)
 
     if post:
         # apply post-processing strategies
@@ -115,6 +121,26 @@ def _refine_lookup(text):
     return text
 
 
+def _prepare_as_string(text):
+    # restore missing periods
+    for i, word in enumerate(text[2:], 2):
+        if word == '\n' and text[i-1] != '.':
+            text[i-1] += '.'
+
+    string = _translate_as_string(text, prettify=False)
+    tokenized = nltk.word_tokenize(string)
+
+    # add sentence-onset tags
+    for i in range(len(tokenized[:-1])):
+        if i == 0 or tokenized[i-1] == '.':
+            tokenized[i] = '<S> ' + tokenized[i]
+
+    # render sentence-onset tags their own token
+    tokenized = ' '.join(tokenized).split(' ')
+
+    return tokenized
+
+
 def _translate_as_string(list_translation, prettify=True):
     # convert a list translation into a string translation
     string_translation = ' '.join(list_translation)
@@ -136,6 +162,7 @@ def _prettify(text):
 
     # remove improper whitespacing around punctuation
     text = text.replace(' ,', ',').replace('  ', ' ').replace(' .', '.')
+    text = text.replace('\n ', '\n')
 
     # capitalize the first letter of each sentence
     lowercase = [m.end(0) for m in re.finditer(r'^|\. ', text)]
@@ -145,14 +172,19 @@ def _prettify(text):
     return text
 
 
+# Pre-Processing --------------------------------------------------------------
+
+def execute_reordering():
+    '''Ensure that the pre-processed text is up-to-date.'''
+    cmd = 'cd parser; python sentenceReorder.py; cd ..'
+    subprocess.call(cmd, shell=True)
+
+
 # Post-Processing -------------------------------------------------------------
 
 
-def postprocess(text):
+def postprocess(translation):
     '''Apply functions to a translation to achieve modest English fluency.'''
-    # tokenize prettified string translation
-    translation = _format_as_string(text)
-
     # apply genitive alternation
     translation = try_genitive_alternations(translation)
 
@@ -180,26 +212,6 @@ def postprocess(text):
         translation = insert_determiners(translation)
 
     return translation
-
-
-def _format_as_string(text):
-    # restore missing periods
-    for i, word in enumerate(text[2:], 2):
-        if word == '\n' and text[i-1] != '.':
-            text[i-1] += '.'
-
-    string = _translate_as_string(text, prettify=False)
-    tokenized = nltk.word_tokenize(string)
-
-    # add initial sentence-onset tag
-    for i in range(len(tokenized[:-1])):
-        if i == 0 or tokenized[i-1] == '.':
-            tokenized[i] = '<S> ' + tokenized[i]
-
-    # render sentence-onset tags their own token
-    tokenized = ' '.join(tokenized).split(' ')
-
-    return tokenized
 
 
 def select_best_candidate(candidates):
@@ -398,33 +410,37 @@ def insert_determiners(text):
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
+
     args = sys.argv[1:]
 
+    def get_filename():
+        if '-test' in args:
+            # translate the test set
+            return 'parser/rest-reordered-30-stp.txt'
+
+        # translate the development set
+        return 'parser/dev-reordered-30-stp.txt'
+
+    def get_caption():
+        if '-baseline' in args:
+            return 'Baseline'
+
+        elif '-post-false' in args:
+            return 'Refined-lookup'
+
+        return 'Post-processed'
+
+    FILENAME = get_filename()
     KW = 'baseline' if '-baseline' in args else 'optimized'
     POST = False if '-post-false' in args or KW == 'baseline' else True
-
-    if '-test' in args:
-        # translate the test set
-        FILENAME = 'parser/rest-reordered-30-stp.txt'
-
-    else:
-        # translate the development set
-        FILENAME = 'parser/dev-reordered-30-stp.txt'
-
-    def execute_reordering():
-        cmd = 'cd parser; python sentenceReorder.py; cd ..'
-        subprocess.call(cmd, shell=True)
-
-    execute_reordering()
-
-    # translate(filename, as_string=False, post=True, kw='optimized'):
+    CAPTION = get_caption()
 
     # # tagged tranlsation
     # print '\n\033[4mTagged translation\033[0m:\n'
     # print nltk.pos_tag(translate(FILENAME,  post=POST, kw=KW))
 
     # string translation with post-processing
-    print '\n\033[4mString translation\033[0m:\n'
+    print '\n\033[4m%s string translation\033[0m:\n' % CAPTION
     translation = translate(FILENAME, as_string=True, post=POST, kw=KW)
     print '\n', translation
 
