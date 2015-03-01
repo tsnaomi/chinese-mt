@@ -400,7 +400,10 @@ def insert_determiners(text):
 if __name__ == '__main__':
     args = sys.argv[1:]
 
-    if args and args[0] == '-test':
+    POST = False if '-post-false' in args else True
+    KW = 'baseline' if '-baseline' in args else 'optimized'
+
+    if '-test' in args:
         # translate the test set
         FILENAME = 'parser/rest-reordered-30-stp.txt'
 
@@ -414,22 +417,18 @@ if __name__ == '__main__':
 
     execute_reordering()
 
+    # translate(filename, as_string=False, post=True, kw='optimized'):
+
     # # tagged tranlsation
     # print '\n\033[4mTagged translation\033[0m:\n'
-    # print nltk.pos_tag(translate(FILENAME))
+    # print nltk.pos_tag(translate(FILENAME,  post=POST, kw=KW))
 
     # string translation with post-processing
-    print '\n\033[4mString translation (with post-processing)\033[0m:\n'
-    translation = translate(FILENAME, as_string=True)
+    print '\n\033[4mString translation\033[0m:\n'
+    translation = translate(FILENAME, as_string=True, post=POST, kw=KW)
     print '\n', translation
 
     # # parsed translation
     # print '\n\033[4mParsed translation\033[0m:\n'
     # from pattern.en import parse
     # print '\n', parse(translation, relations=True)
-
-    # # string translation without post-processing
-    # print '\n\033[4mString translation (no post-processing)\033[0m:\n'
-    # translation2 = translate(FILENAME, as_string=True, post=False)
-    # translation2 = translation2.replace('\n\n', '\n')
-    # print translation2
