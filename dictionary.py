@@ -12,7 +12,6 @@ dictionary = {
         ],
     '的': [
         ('of', 'prep'),
-        ('', 'aux', 'de'),
         ],
     '起源': [
         ('genesis', 'n'),
@@ -42,7 +41,7 @@ dictionary = {
         ('top', 'adv'),
         ],
     '个': [
-        ('', 'measure word', 'ge'),
+        ('piece', 'n'),
         ],
     '使用': [
         ('use', 'v'),
@@ -75,7 +74,6 @@ dictionary = {
     '历史': [
         ('history', 'n'), ],
     '了': [
-        ('', 'perfective', 'PFV'),
         ('finish', 'v'),
         ],
     '看起来': [
@@ -99,7 +97,6 @@ dictionary = {
         ],
     '根': [
         ('root', 'n'),
-        ('', 'measure word', 'gen'),
         ('offspring', 'n'),
         ('base', 'n'),
         ('origin', 'n'),
