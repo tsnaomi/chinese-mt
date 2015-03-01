@@ -7,7 +7,7 @@ import sys
 
 from defSelector import defSelector, getWord
 from ngram import StupidBackoffTrigramLanguageModel
-from pattern.en import conjugate, lexeme, referenced, superlative
+from pattern.en import conjugate, lexeme, parse, pluralize, referenced, superlative
 
 
 stupid = StupidBackoffTrigramLanguageModel()
@@ -201,6 +201,9 @@ def postprocess(translation):
     # position copulas before adverbs
     translation = finesse_copulas(translation)
 
+    # pluralize nouns modified by cardinal numbers
+    translation = pluralize_nouns(translation)
+
     equilibrium = None
 
     while equilibrium != translation:
@@ -262,7 +265,7 @@ def render_superlatives(text):
     for i, word in enumerate(text):
 
         if word == 'MOST' and i + 1 != len(text):
-            text[i] = 'the'
+            text[i] = ''
             text[i+1] = superlative(text[i+1])
 
     return text
@@ -408,6 +411,37 @@ def insert_determiners(text):
     return text
 
 
+def pluralize_nouns(text):
+    tagged = nltk.pos_tag(text)
+
+    for i, word in enumerate(text[:-1]):
+
+        if tagged[i][1] == 'CD':
+
+            n = i + 1
+            while tagged[n][1].startswith('N'):
+                n += 1
+
+            # if the cardinal number is modifying a noun
+            if n != i + 1:
+                N = text[n-1]
+
+                # if the noun is not already plural
+                if not tagged[n-1][1].endswith('P'):
+                    NS = pluralize(N)
+                    modifier = ' '.join(text[i:n-1])
+                    candidates = [
+                        ('%s %s %s' % (modifier, N, text[n]), N),
+                        ('%s %s %s' % (modifier, NS, text[n]), NS),
+                        ]
+
+                    best = select_best_candidate(candidates)
+                    text[n-1] = best
+
+    text = ' '.join(text).split()
+
+    return text
+
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
@@ -452,5 +486,4 @@ if __name__ == '__main__':
 
     # # parsed translation
     # print '\n\033[4mParsed translation\033[0m:\n'
-    # from pattern.en import parse
-    # print '\n', parse(t, relations=True)
+    # print '\n', parse(t)  # relations=True
