@@ -45,7 +45,7 @@ def translate(filename, post=True, refined=True, baseline=False):
     return translation
 
 
-def baseline_translate(filename, refined=True, baseline=False):
+def baseline_translate(filename, refined=True, baseline=False):  # TODO
     '''Return a primitive translation of a file from Chinese into English.
 
     This function produces a word-by-word translation.
@@ -188,7 +188,7 @@ def _prettify(text):
 
 def execute_reordering(parsed_path):
     '''Ensure that the pre-processed text is up-to-date.'''
-    cmd = 'cd parser; python sentenceReorder.py ' + parsed_path + ' ; cd ..'  # + parsed_path + 
+    cmd = 'cd parser; python sentenceReorder.py ' + parsed_path + ' ; cd ..'
     print cmd
     subprocess.call(cmd, shell=True)
 
@@ -198,9 +198,6 @@ def execute_reordering(parsed_path):
 
 def postprocess(translation):
     '''Apply functions to a translation to achieve modest English fluency.'''
-    # strip clause marker
-    translation = strip_complementizer(translation)
-
     # apply genitive alternation
     translation = alternate_pos_with_gen(translation)
 
@@ -243,15 +240,6 @@ def select_best_candidate(candidates):
     best = max(scores)
     # print scores, '\n', 'winner: ', best, '\n'
     return best[2]
-
-
-def strip_complementizer(text):
-    for i, word in enumerate(text):
-
-        if word == 'that':
-            text[i] = ''
-
-    return text
 
 
 def alternate_pos_with_gen(text):
