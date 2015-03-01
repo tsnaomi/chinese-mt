@@ -3,10 +3,14 @@
 import nltk
 import re
 import subprocess
+import sys
 
 from defSelector import defSelector, getWord
 from ngram import StupidBackoffTrigramLanguageModel
 from pattern.en import conjugate, lexeme, referenced, superlative
+
+
+stupid = StupidBackoffTrigramLanguageModel()
 
 
 # To get a baseline translation, pass kw='baseline' to translate().
@@ -71,7 +75,44 @@ def baseline_translate(filename, kw):
             if token:
                 translation.append(token)
 
+    if kw == 'optimized':
+        # refine word-by-word lookup
+        translation = _refine_lookup(translation)
+
     return translation
+
+
+def _refine_lookup(text):
+    '''Select the best translation of a word, given several possibilities.'''
+    for i, word in enumerate(text):
+
+        if '/' in word:
+            words = word.split('/')
+            candidates = []
+            previous = text[i-1] if i != 0 else ''
+            next_ = text[i+1] if i != len(text) else ''
+
+            if '/' in next_:
+                next_ = next_.split('/')
+
+                for n in next_:
+                    candidates_ = [
+                        ('%s %s %s' % (previous, w, n), w)
+                        for w in words
+                        ]
+
+            else:
+                candidates_ = [
+                    ('%s %s %s' % (previous, w, next_), w)
+                    for w in words
+                    ]
+
+            candidates.extend(candidates_)
+
+            best = select_best_candidate(candidates)
+            text[i] = best
+
+    return text
 
 
 def _translate_as_string(list_translation, prettify=True):
@@ -106,28 +147,23 @@ def _prettify(text):
 
 # Post-Processing -------------------------------------------------------------
 
-stupid = StupidBackoffTrigramLanguageModel()
-
 
 def postprocess(text):
     '''Apply functions to a translation to achieve modest English fluency.'''
-    # refine word-by-word lookup
-    text = refine_lookup(text)
-
     # tokenize prettified string translation
     translation = _format_as_string(text)
 
     # apply genitive alternation
-    translation = genitive_alternation(translation)
+    translation = try_genitive_alternations(translation)
 
     # generate superlatives
     translation = render_superlatives(translation)
 
     # change negative determiners into negation
-    translation = convert_negative(translation)
+    translation = convert_negatives(translation)
 
     # deal with the "under the sun" idiom
-    translation = under_the_sun_idiom(translation)
+    translation = relocate_under_the_sun_idiom(translation)
 
     # position copulas before adverbs
     translation = finesse_copulas(translation)
@@ -178,40 +214,7 @@ def select_best_candidate(candidates):
     return best[2]
 
 
-def refine_lookup(text):
-    '''Select the best translation of a word, given several possibilities.'''
-    for i, word in enumerate(text):
-
-        if '/' in word:
-            words = word.split('/')
-            candidates = []
-            previous = text[i-1] if i != 0 else ''
-            next_ = text[i+1] if i != len(text) else ''
-
-            if '/' in next_:
-                next_ = next_.split('/')
-
-                for n in next_:
-                    candidates_ = [
-                        ('%s %s %s' % (previous, w, n), w)
-                        for w in words
-                        ]
-
-            else:
-                candidates_ = [
-                    ('%s %s %s' % (previous, w, next_), w)
-                    for w in words
-                    ]
-
-            candidates.extend(candidates_)
-
-            best = select_best_candidate(candidates)
-            text[i] = best
-
-    return text
-
-
-def genitive_alternation(text):
+def try_genitive_alternations(text):
     '''Apply the genitive for if it scores better than the posessive.
 
     The genitive alternation is the alternation between phrases of the
@@ -252,7 +255,7 @@ def render_superlatives(text):
     return text
 
 
-def convert_negative(text):
+def convert_negatives(text):
     '''Convert 'no' determiners into the negative 'not'.'''
     tagged = nltk.pos_tag(text)
 
@@ -270,7 +273,7 @@ def convert_negative(text):
     return text
 
 
-def under_the_sun_idiom(text):
+def relocate_under_the_sun_idiom(text):
     '''Move adjunctal 'under the sun' idiom to the end of the clause.'''
     for i, word in enumerate(text):
 
@@ -395,14 +398,21 @@ def insert_determiners(text):
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
+    args = sys.argv[1:]
+
+    if args and args[0] == '-test':
+        # translate the test set
+        FILENAME = 'parser/rest-reordered-30-stp.txt'
+
+    else:
+        # translate the development set
+        FILENAME = 'parser/dev-reordered-30-stp.txt'
 
     def execute_reordering():
         cmd = 'cd parser; python sentenceReorder.py; cd ..'
         subprocess.call(cmd, shell=True)
 
     execute_reordering()
-
-    FILENAME = 'parser/dev-reordered-30-stp.txt'
 
     # # tagged tranlsation
     # print '\n\033[4mTagged translation\033[0m:\n'
