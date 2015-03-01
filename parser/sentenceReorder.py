@@ -5,9 +5,10 @@ from nltk.draw import tree
 
 def reorder(parsed_tree):
   """ takes a parse tree, return a re-ordered tree 
-   1. move DEC de to the end, then move what was before de to the end
-   2. move LOC to the front
-   3. move PP, LOCP in the middle of the sentence to the end.
+   1. move DEC de to the end, then move what !was! before DEC to the end, to form relative clauses
+   2. move LC to the front
+   3. move LCP in the middle of the sentence to the end.
+   4. move NT-type NP to the end
   """
   result = parsed_tree
 
@@ -19,11 +20,17 @@ def reorder(parsed_tree):
   # general schema 
   # if condition: result = some_reorder_strategy(result, ...)
 
-  # move CP headed by DEC to the back of the current phrase
+  # move CP headed by DEC to the end of the current phrase
   cp_inds = indicesOfCP(result)
   decp_inds = [i for i in cp_inds if isHeadedByDEC(result[i])]
 
   result = moveChildrenToBack(result, decp_inds)
+
+  # move the NT-type NP to the end of the current phrase
+  np_inds = indicesOfNP(result)
+  ntp_inds = [i for i in np_inds if isHeadedByNT(result[i])]
+
+  result = moveChildrenToBack(result, ntp_inds)
 
   # move DEC to the front of the current phrase
   dec_inds = indicesOfDEC(result)
@@ -65,6 +72,11 @@ def indicesOfCP(parsed_tree):
   
   return childrenIndicesByLabel(parsed_tree, "CP")
 
+def indicesOfNP(parsed_tree):
+  # return a list containing all the CP indices
+  
+  return childrenIndicesByLabel(parsed_tree, "NP")
+
 def indicesOfDEC(parsed_tree):
   # return a list containing the index of DEC
   # only look for the final position, so either [] or singleton
@@ -95,6 +107,20 @@ def isHeadedByLC(parsed_tree):
   else:
     return False
 
+def indicesOfNT(parsed_tree):
+  # return a list containing the index of NT
+  # only look for the final position, so either [] or singleton
+  
+  return childrenIndicesByLabel(parsed_tree, "NT", 
+                                search_range=[len(parsed_tree)-1])
+
+def isHeadedByNT(parsed_tree):
+  # return whether the tree is headed by NT
+
+  if indicesOfNT(parsed_tree):
+    return True
+  else:
+    return False
 
 
 def moveChildrenToFront(parsed_tree, indices):
@@ -143,7 +169,7 @@ def substituteNormalNumbers(s):
 
 if __name__ == '__main__':
     
-  parsed_path = "./dev-parsed-30-stp.txt"
+  parsed_path = "./redev-parsed-30-stp.txt"
   output_path = parsed_path.replace("parsed", "reordered")
 
   with open(parsed_path, 'r') as parsed_file:
