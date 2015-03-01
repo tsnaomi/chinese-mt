@@ -11,7 +11,7 @@ from pattern.en import (
     conjugate,
     # lemma,
     lexeme,
-    # parse,
+    parse,
     pluralize,
     referenced,
     # suggest,
@@ -266,11 +266,11 @@ def alternate_pos_with_gen(text):
                 tagged[i+1][1].startswith(nouns):
 
             x = i - 1
-            while text[x] not in ', <S>':
+            while tagged[x][1].startswith(nouns) and text[x] not in ', <S>':
                 x -= 1
 
             y = i + 1
-            while text[y] not in ',.':
+            while tagged[x][1].startswith(nouns) and text[y] not in ',.':
                 y += 1
 
             # ignore stacked possessive constructions

@@ -27,3 +27,9 @@ To get a translation that uses a refined word-for-word translation, but has not 
 ```
 $ python baseline.py -post-false
 ```
+
+To translate the validation set, use ```-val```:
+
+```
+$ python baseline.py -val
+```
