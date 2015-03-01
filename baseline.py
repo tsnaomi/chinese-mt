@@ -24,10 +24,11 @@ stupid = StupidBackoffTrigramLanguageModel()
 
 def translate(filename, post=True, refined=True, baseline=False):
     '''Return a Chinese to English translation.'''
-    # ensure that the pre-processed text is up-to-date
-    parsed_file = filename.replace("reordered", "parsed")
-    parsed_file = parsed_file.replace("parser/", "./")
-    execute_reordering(parsed_file)
+    if not baseline:
+        # ensure that the pre-processed text is up-to-date
+        parsed_file = filename.replace("reordered", "parsed")
+        parsed_file = parsed_file.replace("parser/", "./")
+        execute_reordering(parsed_file)
 
     # get a word-by-word translation
     translation = baseline_translate(filename, refined, baseline)
@@ -89,15 +90,14 @@ def baseline_translate(filename, refined=True, baseline=False):  # TODO
             if token:
                 translation.append(token)
 
-    if refined:
-        # refine the word-by-word translation by selecting the *best*
-        # translation for each word
-        translation = _refine_lookup(translation)
+    # if refined is true, refine the word-by-word translation by selecting
+    # the *best* translation for each word
+    translation = _refine_lookup(translation, refined)
 
     return translation
 
 
-def _refine_lookup(text):
+def _refine_lookup(text, refined):
     '''Select the best translation of a word, given several possibilities.
 
     This selection is done using a Stupid Backoff Trigram language model.
@@ -105,30 +105,35 @@ def _refine_lookup(text):
     for i, word in enumerate(text):
 
         if '/' in word:
-            words = word.split('/')
-            candidates = []
-            previous = text[i-1] if i != 0 else ''
-            next_ = text[i+1] if i != len(text) else ''
 
-            if '/' in next_:
-                next_ = next_.split('/')
+            if refined:
+                words = word.split('/')
+                candidates = []
+                previous = text[i-1] if i != 0 else ''
+                next_ = text[i+1] if i != len(text) else ''
 
-                for n in next_:
+                if '/' in next_:
+                    next_ = next_.split('/')
+
+                    for n in next_:
+                        candidates_ = [
+                            ('%s %s %s' % (previous, w, n), w)
+                            for w in words
+                            ]
+
+                else:
                     candidates_ = [
-                        ('%s %s %s' % (previous, w, n), w)
+                        ('%s %s %s' % (previous, w, next_), w)
                         for w in words
                         ]
 
+                candidates.extend(candidates_)
+
+                best = select_best_candidate(candidates)
+                text[i] = best
+
             else:
-                candidates_ = [
-                    ('%s %s %s' % (previous, w, next_), w)
-                    for w in words
-                    ]
-
-            candidates.extend(candidates_)
-
-            best = select_best_candidate(candidates)
-            text[i] = best
+                text[i] = word.split('/')[0]
 
     return text
 
@@ -479,15 +484,23 @@ if __name__ == '__main__':
     args = sys.argv[1:]
 
     def get_filename():
+        if '-baseline' and '-test' in args:
+            # translate the segmented test set
+            return 'tagger/tagged_test.txt'
+
+        if '-baseline' in args:
+            # translate the segmented development set
+            return 'tagger/tagged_dev.txt'
+
         if '-test' in args:
-            # translate the test set
+            # translate the preprocessed test set
             return 'parser/test-reordered-30-stp.txt'
 
         if '-val' in args:
-            # translate the validation set
+            # translate the preprocessed validation set
             return 'parser/redev-reordered-30-stp.txt'
 
-        # translate the development set
+        # translate the preprocessed development set
         return 'parser/dev-reordered-30-stp.txt'
 
     def get_caption():
@@ -497,6 +510,9 @@ if __name__ == '__main__':
         elif '-dict' in args:
             return 'Verbose'
 
+        elif '-no-lm' in args:
+            return 'Unmodeled-lookup'
+
         elif '-post-false' in args:
             return 'Refined-lookup'
 
@@ -505,12 +521,12 @@ if __name__ == '__main__':
     FILENAME = get_filename()
     CAPTION = get_caption()
     BASELINE = True if '-baseline' in args else False
-    REFINED = False if '-dict' in args else True
+    REFINED = False if '-dict' in args or '-no-lm' in args else True
     POST = False if '-post-false' in args or not REFINED or BASELINE else True
 
     print '\n\033[4m%s string translation\033[0m:\n' % CAPTION
     t = translate(FILENAME, post=POST, refined=REFINED, baseline=BASELINE)
-    print '\n', t
+    print '\n', t, '\n'
 
     # # parsed translation
     # print '\n\033[4mParsed translation\033[0m:\n'
