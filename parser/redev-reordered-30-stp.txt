@@ -1,0 +1,5 @@
+中国#NR 的#DEG 筷子#NN 的#DEG 价格#NN 很#AD 便宜#VA 。#PU
+筷子#NN 的#DEG 功能#NN 很#AD 多#VA ，#PU 比如#AD 吃饭#VV 。#PU
+筷子#NN 的#DEG 发明者#NN 是#VC 中国人#NN 。#PU
+外国人#NN 的#DEC 使用#VV 筷子#NN ，#PU 有#VE 很多#CD 的#DEG 问题#NN ，#PU 尤其是#AD 移动#NN 不#AD 便于#VV 平衡#NN 。#PU
+但#AD 越来越#AD 多#CD 美国#NR 的#DEG 发明者#NN 关注#VV 筷子#NN 的#DEG 知识#NN 产权#NN 和#CC 倾销#NN 。#PU

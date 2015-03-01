@@ -199,7 +199,7 @@ def postprocess(translation):
     translation = strip_complementizer(translation)
 
     # apply genitive alternation
-    translation = try_genitive_alternations(translation)
+    translation = alternate_pos_with_gen(translation)
 
     # generate superlatives
     translation = render_superlatives(translation)
@@ -251,8 +251,8 @@ def strip_complementizer(text):
     return text
 
 
-def try_genitive_alternations(text):
-    '''Apply the genitive for if it scores better than the posessive.
+def alternate_pos_with_gen(text):
+    '''Apply the genitive if it scores better than the posessive.
 
     The genitive alternation is the alternation between phrases of the
     'noun2 of noun1' and those of the form 'noun1 's noun2'.
@@ -481,7 +481,11 @@ if __name__ == '__main__':
     def get_filename():
         if '-test' in args:
             # translate the test set
-            return 'parser/rest-reordered-30-stp.txt'
+            return 'parser/test-reordered-30-stp.txt'
+
+        if '-val' in args:
+            # translate the validation set
+            return 'parser/redev-reordered-30-stp.txt'
 
         # translate the development set
         return 'parser/dev-reordered-30-stp.txt'
