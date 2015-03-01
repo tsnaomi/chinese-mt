@@ -218,7 +218,7 @@ def postprocess(translation):
 
     equilibrium = None
 
-    while equilibrium != translation:  # and count < 20:
+    while equilibrium != translation:
         equilibrium = translation
 
         # inflect verbs
@@ -264,19 +264,30 @@ def try_genitive_alternations(text):
 
         if word == '\'s' and tagged[i-1][1].startswith(nouns) and \
                 tagged[i+1][1].startswith(nouns):
-            noun1 = text[i-1]
-            noun2 = text[i+1]
-            candidates = [
-                ('%s \'s %s' % (noun1, noun2), 'POS'),
-                ('%s of %s' % (noun2, noun1), 'GEN'),
-                ]
 
-            best = select_best_candidate(candidates)
+            x = i - 1
+            while text[x] not in ', <S>':
+                x -= 1
 
-            if best == 'GEN':
-                text[i-1] = noun2
-                text[i] = 'of'
-                text[i+1] = noun1
+            y = i + 1
+            while text[y] not in ',.':
+                y += 1
+
+            # ignore stacked possessive constructions
+            if ' '.join(text[x:y]).count('\'s') < 2:
+                noun1 = text[i-1]
+                noun2 = text[i+1]
+                candidates = [
+                    ('%s \'s %s' % (noun1, noun2), 'POS'),
+                    ('%s of %s' % (noun2, noun1), 'GEN'),
+                    ]
+
+                best = select_best_candidate(candidates)
+
+                if best == 'GEN':
+                    text[i-1] = noun2
+                    text[i] = 'of'
+                    text[i+1] = noun1
 
     return text
 
