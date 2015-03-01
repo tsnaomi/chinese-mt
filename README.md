@@ -15,6 +15,12 @@ To get a *baseline* (i.e., sans post-processing) translation of the development 
 $ python baseline.py -baseline
 ```
 
+To get a baseline-like translation of the development set, but with all of the possible translations for a given Chinese word, use the ```-dict``` flag. If this flag is used, post-processing will not occur.
+
+```
+$ python baseline.py -dict
+```
+
 
 To get a translation that uses a refined word-for-word translation, but has not undergone post-processing, use the ```-post-false``` flag. Instead of returning the first possible translation for a given Chinese word, this will return the *best* translation, as determined by a Stupid Backoff Trigram language model.
 
