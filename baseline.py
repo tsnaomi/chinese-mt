@@ -65,12 +65,12 @@ def baseline_translate(filename, kw):
             else:
 
                 try:
-                    # grab the best English translation of a word
+                    # grab English translation(s) of the word
                     # change kw to "baseline" to get a baseline translation
                     token = defSelector(i, line, kw)
 
-                    # if the token is a verb, append the Chinese word, English
-                    # verb, and the inflection
+                    # if token is a tuple, take only the first item in the
+                    # tuple, which will be a verb
                     if isinstance(token, tuple):
                         token = token[0]
 
@@ -82,14 +82,18 @@ def baseline_translate(filename, kw):
                 translation.append(token)
 
     if kw == 'optimized':
-        # refine word-by-word lookup
+        # refine the word-by-word translation by selecting the *best*
+        # translation for each word
         translation = _refine_lookup(translation)
 
     return translation
 
 
 def _refine_lookup(text):
-    '''Select the best translation of a word, given several possibilities.'''
+    '''Select the best translation of a word, given several possibilities.
+
+    This selection is done using a Stupid Backoff Trigram language model.
+    '''
     for i, word in enumerate(text):
 
         if '/' in word:
