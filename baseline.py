@@ -25,7 +25,9 @@ stupid = StupidBackoffTrigramLanguageModel()
 def translate(filename, post=True, refined=True, baseline=False):
     '''Return a Chinese to English translation.'''
     # ensure that the pre-processed text is up-to-date
-    execute_reordering()
+    parsed_file = filename.replace("reordered", "parsed")
+    parsed_file = parsed_file.replace("parser/", "./")
+    execute_reordering(parsed_file)
 
     # get a word-by-word translation
     translation = baseline_translate(filename, refined, baseline)
@@ -184,9 +186,10 @@ def _prettify(text):
 
 # Pre-Processing --------------------------------------------------------------
 
-def execute_reordering():
+def execute_reordering(parsed_path):
     '''Ensure that the pre-processed text is up-to-date.'''
-    cmd = 'cd parser; python sentenceReorder.py; cd ..'
+    cmd = 'cd parser; python sentenceReorder.py ' + parsed_path + ' ; cd ..'  # + parsed_path + 
+    print cmd
     subprocess.call(cmd, shell=True)
 
 
