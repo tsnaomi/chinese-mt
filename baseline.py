@@ -199,7 +199,7 @@ def postprocess(translation):
     translation = strip_complementizer(translation)
 
     # apply genitive alternation
-    # translation = alternate_pos_with_gen(translation)
+    translation = alternate_pos_with_gen(translation)
 
     # generate superlatives
     translation = render_superlatives(translation)
@@ -251,55 +251,53 @@ def strip_complementizer(text):
     return text
 
 
-# def alternate_pos_with_gen(text):
-#     '''Apply the genitive if it scores better than the posessive.
+def alternate_pos_with_gen(text):
+    '''Apply the genitive if it scores better than the posessive.
 
-#     The genitive alternation is the alternation between phrases of the
-#     'noun2 of noun1' and those of the form 'noun1 's noun2'.
-#     '''
-#     tagged = nltk.pos_tag(text)
-#     nouns = ('N', 'J')
+    The genitive alternation is the alternation between phrases of the
+    'noun2 of noun1' and those of the form 'noun1 's noun2'.
+    '''
+    tagged = nltk.pos_tag(text)
+    nouns = ('N', 'J')
 
-#     for i, word in enumerate(text):
+    for i, word in enumerate(text):
 
-#         if word == '\'s' and tagged[i-1][1].startswith(nouns) and \
-#                 tagged[i+1][1].startswith(nouns):
+        if word == '\'s' and tagged[i-1][1].startswith(nouns) and \
+                tagged[i+1][1].startswith(nouns):
 
-#             x, X, noun = i - 1, i - 1, True
-#             while text[x] not in '<S>,':
-#                 x -= 1
+            x, X, noun = i - 1, i - 1, True
+            while text[x] not in '<S>,':
+                x -= 1
 
-#                 if noun and tagged[x][1].startswith('N'):
-#                     X -= 1
-#                 else:
-#                     noun = False
+                if noun and tagged[x][1].startswith('N'):
+                    X -= 1
+                else:
+                    noun = False
 
-#             y, Y, noun = i + 1, i + 1, True
-#             while text[y] not in ',.':
-#                 y += 1
+            y, Y, noun = i + 1, i + 1, True
+            while text[y] not in ',.':
+                y += 1
 
-#                 if noun and tagged[y][1].startswith('N'):
-#                     Y += 1
-#                 else:
-#                     noun = False
+                if noun and tagged[y][1].startswith('N'):
+                    Y += 1
+                else:
+                    noun = False
 
-#             # ignore stacked possessive constructions
-#             if ' '.join(text[x:y]).count('\'s') < 2:
-#                 noun1 = ' '.join(text[X:i])
-#                 noun2 = ' '.join(text[i+1:Y+1])
-#                 candidates = [
-#                     ('%s \'s %s' % (noun1, noun2), 'POS'),
-#                     ('%s of %s' % (noun2, noun1), 'GEN'),
-#                     ]
-#                 print '\n', candidates
+            # ignore stacked possessive constructions
+            if ' '.join(text[x:y]).count('\'s') < 2:
+                noun1 = ' '.join(text[X:i])
+                noun2 = ' '.join(text[i+1:Y+1])
+                candidates = [
+                    ('%s \'s %s' % (noun1, noun2), 'POS'),
+                    ('%s of %s' % (noun2, noun1), 'GEN'),
+                    ]
 
-#                 best = select_best_candidate(candidates)
-#                 print best
+                best = select_best_candidate(candidates)
 
-#                 if best == 'GEN':
-#                     text[X:Y+1] = text[i+1:Y+1] + ['of', ] + text[X:i]
+                if best == 'GEN':
+                    text[X:Y+1] = text[i+1:Y+1] + ['of', ] + text[X:i]
 
-#     return text
+    return text
 
 
 def render_superlatives(text):
