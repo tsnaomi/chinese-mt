@@ -11,7 +11,7 @@ from pattern.en import (
     conjugate,
     # lemma,
     lexeme,
-    parse,
+    # parse,
     pluralize,
     referenced,
     suggest,
@@ -223,14 +223,14 @@ def postprocess(translation):
 
     equilibrium = None
 
-    while equilibrium != translation:
-        equilibrium = translation
+    # while equilibrium != translation:
+    #     equilibrium = translation
 
-        # inflect verbs
-        translation = inflect_verbs(translation)
+    # inflect verbs
+    translation = inflect_verbs(translation)
 
-        # instert determiners
-        translation = insert_determiners(translation)
+    # instert determiners
+    translation = insert_determiners(translation)
 
     return translation
 
@@ -528,6 +528,6 @@ if __name__ == '__main__':
     t = translate(FILENAME, post=POST, refined=REFINED, baseline=BASELINE)
     print '\n', t, '\n'
 
-    # parsed translation
-    print '\n\033[4mParsed translation\033[0m:\n'
-    print '\n', parse(t, chunks=False)  # relations=True
+    # # parsed translation
+    # print '\n\033[4mParsed translation\033[0m:\n'
+    # print '\n', parse(t, chunks=False)  # relations=True
