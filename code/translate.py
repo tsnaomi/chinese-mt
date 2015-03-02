@@ -223,14 +223,14 @@ def postprocess(translation):
 
     equilibrium = None
 
-    # while equilibrium != translation:
-    #     equilibrium = translation
+    while equilibrium != translation:
+        equilibrium = translation
 
-    # inflect verbs
-    translation = inflect_verbs(translation)
+        # inflect verbs
+        translation = inflect_verbs(translation)
 
-    # instert determiners
-    translation = insert_determiners(translation)
+        # insert determiners
+        translation = insert_determiners(translation)
 
     return translation
 
