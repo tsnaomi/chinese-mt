@@ -28,7 +28,7 @@ To get a translation that uses a refined word-for-word translation, but has not 
 $ python translate.py -post-false
 ```
 
-To run the the test set:
+To run the test set:
 
 ```
 $ python translate.py -test
