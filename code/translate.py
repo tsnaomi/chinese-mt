@@ -46,7 +46,7 @@ def translate(filename, post=True, refined=True, baseline=False):
     return translation
 
 
-def baseline_translate(filename, refined=True, baseline=False):  # TODO
+def baseline_translate(filename, refined=True, baseline=False):
     '''Return a primitive translation of a file from Chinese into English.
 
     This function produces a word-by-word translation.
@@ -247,7 +247,7 @@ def select_best_candidate(candidates):
     return best[2]
 
 
-def alternate_pos_with_gen(text):
+def alternate_pos_with_gen(text):  # Too complex
     '''Apply the genitive if it scores better than the posessive.
 
     The genitive alternation is the alternation between phrases of the
@@ -374,6 +374,32 @@ def finesse_copulas(text):
     return text
 
 
+def pluralize_nouns(text):
+    '''Pluralize nounds preceded by a cardinal number modifier.'''
+    tagged = nltk.pos_tag(text)
+
+    for i, word in enumerate(text[:-1]):
+
+        if tagged[i][1] == 'CD' and word != 'one' and word != '1':
+
+            nn = i + 1
+            while not tagged[nn][1].startswith('N'):
+                nn += 1
+
+            # if the cardinal number is modifying a noun
+            if tagged[nn][1].startswith('N'):
+
+                # if the noun is not already plural
+                if not tagged[nn][1].endswith('P'):
+                    NS = pluralize(text[nn])
+                    NS = suggest(NS)[0][0]
+                    text[nn] = NS
+
+    text = ' '.join(text).split()
+
+    return text
+
+
 def inflect_verbs(text):
     '''Inflect verbs.'''
     tagged = nltk.pos_tag(text)
@@ -421,7 +447,7 @@ def inflect_verbs(text):
 
 
 def insert_determiners(text):
-    '''Insert determiners'''
+    '''Insert determiners.'''
     tagged = nltk.pos_tag(text)
     modifiers = ('RB', 'JJ', 'CD', 'DT', 'POS', 'NN')
 
@@ -452,30 +478,6 @@ def insert_determiners(text):
 
     return text
 
-
-def pluralize_nouns(text):
-    tagged = nltk.pos_tag(text)
-
-    for i, word in enumerate(text[:-1]):
-
-        if tagged[i][1] == 'CD' and word != 'one' and word != '1':
-
-            nn = i + 1
-            while not tagged[nn][1].startswith('N'):
-                nn += 1
-
-            # if the cardinal number is modifying a noun
-            if tagged[nn][1].startswith('N'):
-
-                # if the noun is not already plural
-                if not tagged[nn][1].endswith('P'):
-                    NS = pluralize(text[nn])
-                    NS = suggest(NS)[0][0]
-                    text[nn] = NS
-
-    text = ' '.join(text).split()
-
-    return text
 
 # -----------------------------------------------------------------------------
 
